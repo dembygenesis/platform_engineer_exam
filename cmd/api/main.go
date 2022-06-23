@@ -65,7 +65,7 @@ func main() {
 
 	mysql, err := ctn.SafeGetMysqlConnection()
 	if err != nil {
-		log.Fatalf("error trying to fetch the mysql persistence from the container: %v", err.Error())
+		log.Fatalf("error trying to fetch the mysql connection from the container: %v", err.Error())
 	}
 	err = mysql.Ping()
 	if err != nil {
