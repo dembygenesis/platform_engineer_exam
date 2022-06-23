@@ -14,6 +14,7 @@ const (
 	configLayer = "config"
 )
 
+// getServices is the main configuration func that produces the singleton
 func getServices() (*[]dingo.Def, error) {
 	var Services = []dingo.Def{
 		{
@@ -26,6 +27,7 @@ func getServices() (*[]dingo.Def, error) {
 	return &Services, nil
 }
 
+// Load bootstrap the dependencies
 func (p *Provider) Load() error {
 	services, err := getServices()
 	if err != nil {
