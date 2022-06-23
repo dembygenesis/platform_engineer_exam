@@ -11,6 +11,7 @@ import (
 	mysql "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql"
 	token "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/token"
 	user "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/user"
+	logrus "github.com/sirupsen/logrus"
 )
 
 func getDiDefs(provider dingo.Provider) []di.Def {
@@ -56,6 +57,24 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 				if !ok {
 					var eo *config.Config
 					return eo, errors.New("could not cast build function to func() (*config.Config, error)")
+				}
+				return b()
+			},
+			Unshared: false,
+		},
+		{
+			Name:  "logger",
+			Scope: "",
+			Build: func(ctn di.Container) (interface{}, error) {
+				d, err := provider.Get("logger")
+				if err != nil {
+					var eo *logrus.Entry
+					return eo, err
+				}
+				b, ok := d.Build.(func() (*logrus.Entry, error))
+				if !ok {
+					var eo *logrus.Entry
+					return eo, errors.New("could not cast build function to func() (*logrus.Entry, error)")
 				}
 				return b()
 			},

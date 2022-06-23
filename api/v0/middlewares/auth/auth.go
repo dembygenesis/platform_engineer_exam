@@ -1,37 +1,39 @@
 package auth
 
 import (
-	"fmt"
 	"github.com/dembygenesis/platform_engineer_exam/api/helpers"
 	"github.com/dembygenesis/platform_engineer_exam/dependency_injection/dic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
+	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
 // ProtectedRoute guards a route using the "Basic Auth" protocol
 func ProtectedRoute(ctn *dic.Container) func(c *fiber.Ctx) error {
+	userPersistence := ctn.GetMysqlUserPersistence()
+	logger := ctn.GetLogger()
 
 	return basicauth.New(basicauth.Config{
 		Authorizer: func(user, pass string) bool {
-			userPersistence, err := ctn.SafeGetMysqlUserPersistence()
-			if err != nil {
-				fmt.Println("to get user persistence - convert to log, later")
-				return false
-			}
+
 			matched, err := userPersistence.BasicAuth(user, pass)
 			if err != nil {
-				fmt.Println("to get user persistence - convert to log, later", err.Error())
+				logger.WithFields(logrus.Fields{
+					"err": err,
+				}).Error("error_basic_auth")
 				return false
 			}
 			if !matched {
-				fmt.Println("No match!")
+				logger.WithFields(logrus.Fields{
+					"user": user,
+				}).Info("info_no_match")
 				return false
 			}
 			return true
 		},
 		Unauthorized: func(c *fiber.Ctx) error {
-			return c.Status(http.StatusUnauthorized).JSON(helpers.WrapInErrMap("Unauthorized"))
+			return c.Status(http.StatusUnauthorized).JSON(helpers.WrapStrInErrMap("Unauthorized"))
 		},
 	})
 }

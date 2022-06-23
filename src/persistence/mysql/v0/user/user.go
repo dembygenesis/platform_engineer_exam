@@ -22,7 +22,11 @@ func (p *PersistenceUser) BasicAuth(user, pass string) (bool, error) {
 		models_schema.UserWhere.Email.EQ(user),
 	).One(mysql.BoilCtx, p.db)
 	if err != nil {
-		return false, errors.Wrap(errMatchingEmail, err.Error())
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		} else {
+			return false, errors.Wrap(errMatchingEmail, err.Error())
+		}
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(match.Password), []byte(pass))

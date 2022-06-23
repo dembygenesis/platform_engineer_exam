@@ -26,8 +26,14 @@ func AddContainerInstance(container *dic.Container) func(c *fiber.Ctx) error {
 	}
 }
 
-func WrapInErrMap(i interface{}) interface{} {
-	w := make(map[string][]interface{})
-	w["errors"] = []interface{}{i}
+func WrapStrInErrMap(s string) map[string][]string {
+	w := make(map[string][]string)
+	w["errors"] = []string{s}
+	return w
+}
+
+func WrapErrInErrMap(err error) map[string][]string {
+	w := make(map[string][]string)
+	w["errors"] = []string{err.Error()}
 	return w
 }
