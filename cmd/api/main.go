@@ -2,14 +2,17 @@ package main
 
 import (
 	"fmt"
-	"github.com/dembygenesis/platform_engineer_exam/src/config"
+	"github.com/dembygenesis/platform_engineer_exam/dependency_injection/dic"
 	"log"
 )
 
 func main() {
-	cfg, err := config.NewConfig()
+	builder, err := dic.NewBuilder()
 	if err != nil {
-		log.Fatalf("error initializing config: %v", err.Error())
+		log.Fatalf("error trying to initialize the dependency builder: %v", err.Error())
 	}
-	fmt.Println("cfg", cfg)
+
+	ctn := builder.Build()
+	cfg, _ := ctn.SafeGetConfig()
+	fmt.Println(cfg)
 }
