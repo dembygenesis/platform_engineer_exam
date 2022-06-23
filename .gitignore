@@ -2,3 +2,5 @@
 .env
 .idea/*
 kill_running_air.sh
+sqlboiler.toml
+sqlboiler-regenerate.sh
