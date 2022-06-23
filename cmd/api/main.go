@@ -63,7 +63,7 @@ func main() {
 		log.Fatalf("error trying to fetch the config from the container: %v", err.Error())
 	}
 
-	mysql, err := ctn.SafeGetMysqlTokenPersistence()
+	mysql, err := ctn.SafeGetMysqlConnection()
 	if err != nil {
 		log.Fatalf("error trying to fetch the mysql persistence from the container: %v", err.Error())
 	}

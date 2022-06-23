@@ -12,7 +12,8 @@ import (
 
 	token1 "github.com/dembygenesis/platform_engineer_exam/business/token"
 	config "github.com/dembygenesis/platform_engineer_exam/src/config"
-	token "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/token"
+	v "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0"
+	token "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/token"
 )
 
 // C retrieves a Container from an interface.
@@ -225,7 +226,7 @@ func (c *Container) IsClosed() bool {
 // 	scope: "main"
 // 	build: func
 // 	params:
-// 		- "0": Service(*token.MYSQLPersistence) ["mysql_token_persistence"]
+// 		- "0": Service(*token.PersistenceToken) ["mysql_token_persistence"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
@@ -252,7 +253,7 @@ func (c *Container) SafeGetBusinessToken() (*token1.BusinessToken, error) {
 // 	scope: "main"
 // 	build: func
 // 	params:
-// 		- "0": Service(*token.MYSQLPersistence) ["mysql_token_persistence"]
+// 		- "0": Service(*token.PersistenceToken) ["mysql_token_persistence"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
@@ -274,7 +275,7 @@ func (c *Container) GetBusinessToken() *token1.BusinessToken {
 // 	scope: "main"
 // 	build: func
 // 	params:
-// 		- "0": Service(*token.MYSQLPersistence) ["mysql_token_persistence"]
+// 		- "0": Service(*token.PersistenceToken) ["mysql_token_persistence"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
@@ -302,7 +303,7 @@ func (c *Container) UnscopedSafeGetBusinessToken() (*token1.BusinessToken, error
 // 	scope: "main"
 // 	build: func
 // 	params:
-// 		- "0": Service(*token.MYSQLPersistence) ["mysql_token_persistence"]
+// 		- "0": Service(*token.PersistenceToken) ["mysql_token_persistence"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
@@ -325,7 +326,7 @@ func (c *Container) UnscopedGetBusinessToken() *token1.BusinessToken {
 // 	scope: "main"
 // 	build: func
 // 	params:
-// 		- "0": Service(*token.MYSQLPersistence) ["mysql_token_persistence"]
+// 		- "0": Service(*token.PersistenceToken) ["mysql_token_persistence"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
@@ -452,11 +453,11 @@ func Config(i interface{}) *config.Config {
 	return C(i).GetConfig()
 }
 
-// SafeGetMysqlTokenPersistence retrieves the "mysql_token_persistence" object from the main scope.
+// SafeGetMysqlConnection retrieves the "mysql_connection" object from the main scope.
 //
 // ---------------------------------------------
-// 	name: "mysql_token_persistence"
-// 	type: *token.MYSQLPersistence
+// 	name: "mysql_connection"
+// 	type: *v.MYSQLConnection
 // 	scope: "main"
 // 	build: func
 // 	params:
@@ -466,24 +467,24 @@ func Config(i interface{}) *config.Config {
 // ---------------------------------------------
 //
 // If the object can not be retrieved, it returns an error.
-func (c *Container) SafeGetMysqlTokenPersistence() (*token.MYSQLPersistence, error) {
-	i, err := c.ctn.SafeGet("mysql_token_persistence")
+func (c *Container) SafeGetMysqlConnection() (*v.MYSQLConnection, error) {
+	i, err := c.ctn.SafeGet("mysql_connection")
 	if err != nil {
-		var eo *token.MYSQLPersistence
+		var eo *v.MYSQLConnection
 		return eo, err
 	}
-	o, ok := i.(*token.MYSQLPersistence)
+	o, ok := i.(*v.MYSQLConnection)
 	if !ok {
-		return o, errors.New("could get 'mysql_token_persistence' because the object could not be cast to *token.MYSQLPersistence")
+		return o, errors.New("could get 'mysql_connection' because the object could not be cast to *v.MYSQLConnection")
 	}
 	return o, nil
 }
 
-// GetMysqlTokenPersistence retrieves the "mysql_token_persistence" object from the main scope.
+// GetMysqlConnection retrieves the "mysql_connection" object from the main scope.
 //
 // ---------------------------------------------
-// 	name: "mysql_token_persistence"
-// 	type: *token.MYSQLPersistence
+// 	name: "mysql_connection"
+// 	type: *v.MYSQLConnection
 // 	scope: "main"
 // 	build: func
 // 	params:
@@ -493,7 +494,127 @@ func (c *Container) SafeGetMysqlTokenPersistence() (*token.MYSQLPersistence, err
 // ---------------------------------------------
 //
 // If the object can not be retrieved, it panics.
-func (c *Container) GetMysqlTokenPersistence() *token.MYSQLPersistence {
+func (c *Container) GetMysqlConnection() *v.MYSQLConnection {
+	o, err := c.SafeGetMysqlConnection()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetMysqlConnection retrieves the "mysql_connection" object from the main scope.
+//
+// ---------------------------------------------
+// 	name: "mysql_connection"
+// 	type: *v.MYSQLConnection
+// 	scope: "main"
+// 	build: func
+// 	params:
+// 		- "0": Service(*config.Config) ["config"]
+// 	unshared: false
+// 	close: false
+// ---------------------------------------------
+//
+// This method can be called even if main is a sub-scope of the container.
+// If the object can not be retrieved, it returns an error.
+func (c *Container) UnscopedSafeGetMysqlConnection() (*v.MYSQLConnection, error) {
+	i, err := c.ctn.UnscopedSafeGet("mysql_connection")
+	if err != nil {
+		var eo *v.MYSQLConnection
+		return eo, err
+	}
+	o, ok := i.(*v.MYSQLConnection)
+	if !ok {
+		return o, errors.New("could get 'mysql_connection' because the object could not be cast to *v.MYSQLConnection")
+	}
+	return o, nil
+}
+
+// UnscopedGetMysqlConnection retrieves the "mysql_connection" object from the main scope.
+//
+// ---------------------------------------------
+// 	name: "mysql_connection"
+// 	type: *v.MYSQLConnection
+// 	scope: "main"
+// 	build: func
+// 	params:
+// 		- "0": Service(*config.Config) ["config"]
+// 	unshared: false
+// 	close: false
+// ---------------------------------------------
+//
+// This method can be called even if main is a sub-scope of the container.
+// If the object can not be retrieved, it panics.
+func (c *Container) UnscopedGetMysqlConnection() *v.MYSQLConnection {
+	o, err := c.UnscopedSafeGetMysqlConnection()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// MysqlConnection retrieves the "mysql_connection" object from the main scope.
+//
+// ---------------------------------------------
+// 	name: "mysql_connection"
+// 	type: *v.MYSQLConnection
+// 	scope: "main"
+// 	build: func
+// 	params:
+// 		- "0": Service(*config.Config) ["config"]
+// 	unshared: false
+// 	close: false
+// ---------------------------------------------
+//
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it calls the GetMysqlConnection method.
+// If the container can not be retrieved, it panics.
+func MysqlConnection(i interface{}) *v.MYSQLConnection {
+	return C(i).GetMysqlConnection()
+}
+
+// SafeGetMysqlTokenPersistence retrieves the "mysql_token_persistence" object from the main scope.
+//
+// ---------------------------------------------
+// 	name: "mysql_token_persistence"
+// 	type: *token.PersistenceToken
+// 	scope: "main"
+// 	build: func
+// 	params:
+// 		- "0": Service(*v.MYSQLConnection) ["mysql_connection"]
+// 	unshared: false
+// 	close: false
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it returns an error.
+func (c *Container) SafeGetMysqlTokenPersistence() (*token.PersistenceToken, error) {
+	i, err := c.ctn.SafeGet("mysql_token_persistence")
+	if err != nil {
+		var eo *token.PersistenceToken
+		return eo, err
+	}
+	o, ok := i.(*token.PersistenceToken)
+	if !ok {
+		return o, errors.New("could get 'mysql_token_persistence' because the object could not be cast to *token.PersistenceToken")
+	}
+	return o, nil
+}
+
+// GetMysqlTokenPersistence retrieves the "mysql_token_persistence" object from the main scope.
+//
+// ---------------------------------------------
+// 	name: "mysql_token_persistence"
+// 	type: *token.PersistenceToken
+// 	scope: "main"
+// 	build: func
+// 	params:
+// 		- "0": Service(*v.MYSQLConnection) ["mysql_connection"]
+// 	unshared: false
+// 	close: false
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it panics.
+func (c *Container) GetMysqlTokenPersistence() *token.PersistenceToken {
 	o, err := c.SafeGetMysqlTokenPersistence()
 	if err != nil {
 		panic(err)
@@ -505,26 +626,26 @@ func (c *Container) GetMysqlTokenPersistence() *token.MYSQLPersistence {
 //
 // ---------------------------------------------
 // 	name: "mysql_token_persistence"
-// 	type: *token.MYSQLPersistence
+// 	type: *token.PersistenceToken
 // 	scope: "main"
 // 	build: func
 // 	params:
-// 		- "0": Service(*config.Config) ["config"]
+// 		- "0": Service(*v.MYSQLConnection) ["mysql_connection"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
 //
 // This method can be called even if main is a sub-scope of the container.
 // If the object can not be retrieved, it returns an error.
-func (c *Container) UnscopedSafeGetMysqlTokenPersistence() (*token.MYSQLPersistence, error) {
+func (c *Container) UnscopedSafeGetMysqlTokenPersistence() (*token.PersistenceToken, error) {
 	i, err := c.ctn.UnscopedSafeGet("mysql_token_persistence")
 	if err != nil {
-		var eo *token.MYSQLPersistence
+		var eo *token.PersistenceToken
 		return eo, err
 	}
-	o, ok := i.(*token.MYSQLPersistence)
+	o, ok := i.(*token.PersistenceToken)
 	if !ok {
-		return o, errors.New("could get 'mysql_token_persistence' because the object could not be cast to *token.MYSQLPersistence")
+		return o, errors.New("could get 'mysql_token_persistence' because the object could not be cast to *token.PersistenceToken")
 	}
 	return o, nil
 }
@@ -533,18 +654,18 @@ func (c *Container) UnscopedSafeGetMysqlTokenPersistence() (*token.MYSQLPersiste
 //
 // ---------------------------------------------
 // 	name: "mysql_token_persistence"
-// 	type: *token.MYSQLPersistence
+// 	type: *token.PersistenceToken
 // 	scope: "main"
 // 	build: func
 // 	params:
-// 		- "0": Service(*config.Config) ["config"]
+// 		- "0": Service(*v.MYSQLConnection) ["mysql_connection"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
 //
 // This method can be called even if main is a sub-scope of the container.
 // If the object can not be retrieved, it panics.
-func (c *Container) UnscopedGetMysqlTokenPersistence() *token.MYSQLPersistence {
+func (c *Container) UnscopedGetMysqlTokenPersistence() *token.PersistenceToken {
 	o, err := c.UnscopedSafeGetMysqlTokenPersistence()
 	if err != nil {
 		panic(err)
@@ -556,11 +677,11 @@ func (c *Container) UnscopedGetMysqlTokenPersistence() *token.MYSQLPersistence {
 //
 // ---------------------------------------------
 // 	name: "mysql_token_persistence"
-// 	type: *token.MYSQLPersistence
+// 	type: *token.PersistenceToken
 // 	scope: "main"
 // 	build: func
 // 	params:
-// 		- "0": Service(*config.Config) ["config"]
+// 		- "0": Service(*v.MYSQLConnection) ["mysql_connection"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
@@ -568,6 +689,6 @@ func (c *Container) UnscopedGetMysqlTokenPersistence() *token.MYSQLPersistence {
 // It tries to find the container with the C method and the given interface.
 // If the container can be retrieved, it calls the GetMysqlTokenPersistence method.
 // If the container can not be retrieved, it panics.
-func MysqlTokenPersistence(i interface{}) *token.MYSQLPersistence {
+func MysqlTokenPersistence(i interface{}) *token.PersistenceToken {
 	return C(i).GetMysqlTokenPersistence()
 }

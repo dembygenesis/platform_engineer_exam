@@ -13,11 +13,11 @@ type BusinessToken struct {
 }
 
 func (b *BusinessToken) Generate() (string, error) {
-	return b.Generate()
+	return b.dataLayer.Generate()
 }
 
 func (b *BusinessToken) Validate(s string) error {
-	return b.Validate(s)
+	return b.dataLayer.Validate(s)
 }
 
 func NewBusinessToken(mysqlDataPersistence dataPersistence) *BusinessToken {

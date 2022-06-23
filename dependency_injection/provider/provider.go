@@ -1,10 +1,10 @@
 package provider
 
 import (
-	"fmt"
 	BusinessToken "github.com/dembygenesis/platform_engineer_exam/business/token"
 	"github.com/dembygenesis/platform_engineer_exam/src/config"
-	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/token"
+	v0 "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0"
+	token2 "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/token"
 	"github.com/pkg/errors"
 	"github.com/sarulabs/dingo/v4"
 	"log"
@@ -16,6 +16,7 @@ type Provider struct {
 
 const (
 	configLayer                = "config"
+	mysqlConnection            = "mysql_connection"
 	mysqlTokenPersistenceLayer = "mysql_token_persistence"
 	businessToken              = "business_token"
 )
@@ -30,26 +31,25 @@ func getServices() (*[]dingo.Def, error) {
 			},
 		},
 		{
+			Name: mysqlConnection,
+			Build: func(config *config.Config) (*v0.MYSQLConnection, error) {
+				return v0.NewMYSQLConnection(config.DatabaseCredentials)
+			},
+		},
+		{
 			Name: mysqlTokenPersistenceLayer,
-			Build: func(config *config.Config) (*token.MYSQLPersistence, error) {
-				persistence, err := token.NewMYSQLPersistence(
-					config.DatabaseCredentials.Host,
-					config.DatabaseCredentials.User,
-					config.DatabaseCredentials.Pass,
-					config.DatabaseCredentials.Database,
-					config.DatabaseCredentials.Port,
-				)
+			Build: func(connection *v0.MYSQLConnection) (*token2.PersistenceToken, error) {
+				persistence, err := token2.NewPersistenceToken(connection.DB)
 				if err != nil {
 					log.Fatalf("error establishing the mysql persistence: %v", err.Error())
 				}
-				fmt.Println("persistence", persistence)
 				return persistence, nil
 			},
 		},
 		{
 			Name: businessToken,
-			Build: func(mysqlPersistence *token.MYSQLPersistence) (*BusinessToken.BusinessToken, error) {
-				return BusinessToken.NewBusinessToken(mysqlPersistence), nil
+			Build: func(persistenceToken *token2.PersistenceToken) (*BusinessToken.BusinessToken, error) {
+				return BusinessToken.NewBusinessToken(persistenceToken), nil
 			},
 		},
 	}
