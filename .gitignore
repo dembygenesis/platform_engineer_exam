@@ -1,3 +1,4 @@
 .air.toml
 .env
 .idea/*
+kill_running_air.sh

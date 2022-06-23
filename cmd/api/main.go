@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/dembygenesis/platform_engineer_exam/api"
+	"github.com/dembygenesis/platform_engineer_exam/api/helpers"
 	"github.com/dembygenesis/platform_engineer_exam/dependency_injection/dic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -15,27 +16,13 @@ import (
 	"syscall"
 )
 
-func mapRoutes(app *fiber.App) {
-	api := app.Group("/api", cors.New())
-	apiToken := api.Group("/token")
-
-	apiToken.Get("/")
-}
-
-func addContainerInstance(container *dic.Container) func(c *fiber.Ctx) error {
-	return func(c *fiber.Ctx) error {
-		c.Locals("dependencies", container)
-		return c.Next()
-	}
-}
-
 // initAPI boots our REST API connections
 func initAPI(container *dic.Container, port string) {
 	app := fiber.New(fiber.Config{
 		BodyLimit: 20971520,
 	})
 
-	app.Use(addContainerInstance(container))
+	app.Use(helpers.AddContainerInstance(container))
 	app.Use(recover.New())
 	app.Use(cors.New())
 	app.Use(logger.New(logger.Config{
@@ -67,13 +54,22 @@ func initAPI(container *dic.Container, port string) {
 func main() {
 	builder, err := dic.NewBuilder()
 	if err != nil {
-		log.Fatalf("error trying to initialize the dependency builder: %v", err.Error())
+		log.Fatalf("error trying to initialize the builder: %v", err.Error())
 	}
-
 	ctn := builder.Build()
+
 	cfg, err := ctn.SafeGetConfig()
 	if err != nil {
-		log.Fatalf("error trying to fetch the config dependency: %v", err.Error())
+		log.Fatalf("error trying to fetch the config from the container: %v", err.Error())
+	}
+
+	mysql, err := ctn.SafeGetMysqlTokenPersistence()
+	if err != nil {
+		log.Fatalf("error trying to fetch the mysql persistence from the container: %v", err.Error())
+	}
+	err = mysql.Ping()
+	if err != nil {
+		log.Fatalf("error trying to ping from the mysql persistence: %v", err.Error())
 	}
 
 	initAPI(ctn, strconv.Itoa(cfg.API.Port))

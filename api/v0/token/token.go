@@ -1,17 +1,25 @@
 package token
 
 import (
-	"fmt"
 	"github.com/dembygenesis/platform_engineer_exam/api/helpers"
 	"github.com/gofiber/fiber/v2"
+	"net/http"
 )
 
 func GetToken(ctx *fiber.Ctx) error {
-	ctn := helpers.GetContainer(ctx)
-	cfg, err := ctn.SafeGetConfig()
+	ctn, err := helpers.GetContainer(ctx)
 	if err != nil {
-		panic("error getting config: " + err.Error())
+		return ctx.Status(http.StatusInternalServerError).JSON(err.Error())
 	}
-	fmt.Println("cfg", cfg)
-	return ctx.JSON("Test")
+	biz, err := ctn.SafeGetBusinessToken()
+	if err != nil {
+		return ctx.Status(http.StatusInternalServerError).JSON(err.Error())
+	}
+
+	generatedToken, err := biz.Generate()
+	if err != nil {
+		return ctx.Status(http.StatusInternalServerError).JSON(err.Error())
+	}
+
+	return ctx.JSON(generatedToken)
 }
