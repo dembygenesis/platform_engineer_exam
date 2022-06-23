@@ -8,6 +8,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"math/rand"
+	"time"
 )
 
 type PersistenceToken struct {
@@ -25,7 +26,7 @@ var (
 )
 
 // Generate returns a return string in the length range of 6-12
-func (p *PersistenceToken) Generate() (string, error) {
+func (p *PersistenceToken) Generate(createdBy int) (string, error) {
 	var randomString string
 	tokenVerifiedUnique := false
 	for !tokenVerifiedUnique {
@@ -43,8 +44,10 @@ func (p *PersistenceToken) Generate() (string, error) {
 		}
 	}
 	newToken := models_schema.Token{
-		ID:  0,
-		Key: randomString,
+		Key:       randomString,
+		CreatedBy: createdBy,
+		CreatedAt: time.Now(),
+		ExpiresAt: time.Now().Add(7 * time.Hour * 24),
 	}
 	err := newToken.Insert(mysql.BoilCtx, p.db, boil.Infer())
 	if err != nil {

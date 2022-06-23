@@ -17,23 +17,23 @@ var (
 )
 
 // BasicAuth authenticates by first matching the user to "email", and the password to it's "encrypted" version
-func (p *PersistenceUser) BasicAuth(user, pass string) (bool, error) {
+func (p *PersistenceUser) BasicAuth(user, pass string) (bool, *models_schema.User, error) {
 	match, err := models_schema.Users(
 		models_schema.UserWhere.Email.EQ(user),
 	).One(mysql.BoilCtx, p.db)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return false, nil
+			return false, match, nil
 		} else {
-			return false, errors.Wrap(errMatchingEmail, err.Error())
+			return false, match, errors.Wrap(errMatchingEmail, err.Error())
 		}
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(match.Password), []byte(pass))
 	if err != nil {
-		return false, nil
+		return false, match, nil
 	}
-	return true, nil
+	return true, match, nil
 }
 
 func NewPersistenceUser(db *sql.DB) *PersistenceUser {

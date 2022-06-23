@@ -9,6 +9,11 @@ import (
 	"net/http"
 )
 
+const (
+	user = "user"
+	pass = "pass"
+)
+
 // ProtectedRoute guards a route using the "Basic Auth" protocol
 func ProtectedRoute(ctn *dic.Container) func(c *fiber.Ctx) error {
 	userPersistence := ctn.GetMysqlUserPersistence()
@@ -16,17 +21,14 @@ func ProtectedRoute(ctn *dic.Container) func(c *fiber.Ctx) error {
 
 	return basicauth.New(basicauth.Config{
 		Authorizer: func(user, pass string) bool {
-			matched, err := userPersistence.BasicAuth(user, pass)
+			matched, _, err := userPersistence.BasicAuth(user, pass)
 			if err != nil {
 				logger.WithFields(logrus.Fields{
 					"err": err,
-				}).Error("error_basic_auth")
+				}).Error("error_protected_route")
 				return false
 			}
 			if !matched {
-				logger.WithFields(logrus.Fields{
-					"user": user,
-				}).Info("info_no_match")
 				return false
 			}
 			return true
@@ -34,5 +36,29 @@ func ProtectedRoute(ctn *dic.Container) func(c *fiber.Ctx) error {
 		Unauthorized: func(c *fiber.Ctx) error {
 			return c.Status(http.StatusUnauthorized).JSON(helpers.WrapStrInErrMap("Unauthorized"))
 		},
+		ContextUsername: user,
+		ContextPassword: pass,
 	})
+}
+
+func ExtractAuthedUserMeta(c *fiber.Ctx) error {
+	ctn, err := helpers.GetContainer(c)
+	if err != nil {
+		return err
+	}
+	logger := ctn.GetLogger()
+	userPersistence := ctn.GetMysqlUserPersistence()
+
+	user := c.Locals(user).(string)
+	pass := c.Locals(pass).(string)
+
+	_, userMeta, err := userPersistence.BasicAuth(user, pass)
+	if err != nil {
+		logger.WithFields(logrus.Fields{
+			"err": err,
+		}).Error("error_extract_authed_user_meta")
+		return c.Status(http.StatusUnauthorized).JSON(helpers.WrapErrInErrMap(err))
+	}
+	c.Locals("userMeta", userMeta)
+	return c.Next()
 }

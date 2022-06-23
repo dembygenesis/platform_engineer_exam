@@ -26,8 +26,9 @@ type Token struct {
 	ID        int       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Key       string    `boil:"key" json:"key" toml:"key" yaml:"key"`
 	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	Expired   bool      `boil:"expired" json:"expired" toml:"expired" yaml:"expired"`
+	Revoked   bool      `boil:"revoked" json:"revoked" toml:"revoked" yaml:"revoked"`
 	CreatedBy int       `boil:"created_by" json:"created_by" toml:"created_by" yaml:"created_by"`
+	ExpiresAt time.Time `boil:"expires_at" json:"expires_at" toml:"expires_at" yaml:"expires_at"`
 
 	R *tokenR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L tokenL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,28 +38,32 @@ var TokenColumns = struct {
 	ID        string
 	Key       string
 	CreatedAt string
-	Expired   string
+	Revoked   string
 	CreatedBy string
+	ExpiresAt string
 }{
 	ID:        "id",
 	Key:       "key",
 	CreatedAt: "created_at",
-	Expired:   "expired",
+	Revoked:   "revoked",
 	CreatedBy: "created_by",
+	ExpiresAt: "expires_at",
 }
 
 var TokenTableColumns = struct {
 	ID        string
 	Key       string
 	CreatedAt string
-	Expired   string
+	Revoked   string
 	CreatedBy string
+	ExpiresAt string
 }{
 	ID:        "token.id",
 	Key:       "token.key",
 	CreatedAt: "token.created_at",
-	Expired:   "token.expired",
+	Revoked:   "token.revoked",
 	CreatedBy: "token.created_by",
+	ExpiresAt: "token.expires_at",
 }
 
 // Generated where
@@ -143,14 +148,16 @@ var TokenWhere = struct {
 	ID        whereHelperint
 	Key       whereHelperstring
 	CreatedAt whereHelpertime_Time
-	Expired   whereHelperbool
+	Revoked   whereHelperbool
 	CreatedBy whereHelperint
+	ExpiresAt whereHelpertime_Time
 }{
 	ID:        whereHelperint{field: "`token`.`id`"},
 	Key:       whereHelperstring{field: "`token`.`key`"},
 	CreatedAt: whereHelpertime_Time{field: "`token`.`created_at`"},
-	Expired:   whereHelperbool{field: "`token`.`expired`"},
+	Revoked:   whereHelperbool{field: "`token`.`revoked`"},
 	CreatedBy: whereHelperint{field: "`token`.`created_by`"},
+	ExpiresAt: whereHelpertime_Time{field: "`token`.`expires_at`"},
 }
 
 // TokenRels is where relationship names are stored.
@@ -181,9 +188,9 @@ func (r *tokenR) GetCreatedByUser() *User {
 type tokenL struct{}
 
 var (
-	tokenAllColumns            = []string{"id", "key", "created_at", "expired", "created_by"}
-	tokenColumnsWithoutDefault = []string{"id", "key", "created_by"}
-	tokenColumnsWithDefault    = []string{"created_at", "expired"}
+	tokenAllColumns            = []string{"id", "key", "created_at", "revoked", "created_by", "expires_at"}
+	tokenColumnsWithoutDefault = []string{"key", "created_by", "expires_at"}
+	tokenColumnsWithDefault    = []string{"id", "created_at", "revoked"}
 	tokenPrimaryKeyColumns     = []string{"id"}
 	tokenGeneratedColumns      = []string{}
 )
@@ -735,15 +742,26 @@ func (o *Token) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models_schema: unable to insert into token")
 	}
 
+	var lastID int64
 	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
+		goto CacheNoHooks
+	}
+
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = int(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == tokenMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -1006,16 +1024,27 @@ func (o *Token) Upsert(ctx context.Context, exec boil.ContextExecutor, updateCol
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models_schema: unable to upsert for token")
 	}
 
+	var lastID int64
 	var uniqueMap []uint64
 	var nzUniqueCols []interface{}
 
 	if len(cache.retMapping) == 0 {
+		goto CacheNoHooks
+	}
+
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = int(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == tokenMapping["id"] {
 		goto CacheNoHooks
 	}
 
