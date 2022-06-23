@@ -6,10 +6,11 @@ import (
 )
 
 func Test_generateRandomCharacters(t *testing.T) {
-	strLen := 12
-	for strLen != 6 {
-		randomString := generateRandomCharacters(strLen)
-		assert.Equal(t, len(randomString), strLen)
-		strLen--
-	}
+	strLen := 6
+	randomString := generateRandomCharacters(strLen)
+	assert.Equal(t, len(randomString), strLen)
+
+	strLen = 12
+	randomString = generateRandomCharacters(strLen)
+	assert.Equal(t, len(randomString), strLen)
 }

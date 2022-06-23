@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,11 +23,11 @@ import (
 
 // Token is an object representing the database table.
 type Token struct {
-	ID        int        `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Key       string     `boil:"key" json:"key" toml:"key" yaml:"key"`
-	CreatedAt null.Int64 `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	Expired   bool       `boil:"expired" json:"expired" toml:"expired" yaml:"expired"`
-	CreatedBy int        `boil:"created_by" json:"created_by" toml:"created_by" yaml:"created_by"`
+	ID        int       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Key       string    `boil:"key" json:"key" toml:"key" yaml:"key"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	Expired   bool      `boil:"expired" json:"expired" toml:"expired" yaml:"expired"`
+	CreatedBy int       `boil:"created_by" json:"created_by" toml:"created_by" yaml:"created_by"`
 
 	R *tokenR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L tokenL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -110,29 +109,26 @@ func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-type whereHelpernull_Int64 struct{ field string }
+type whereHelpertime_Time struct{ field string }
 
-func (w whereHelpernull_Int64) EQ(x null.Int64) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
+func (w whereHelpertime_Time) EQ(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.EQ, x)
 }
-func (w whereHelpernull_Int64) NEQ(x null.Int64) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
+func (w whereHelpertime_Time) NEQ(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.NEQ, x)
 }
-func (w whereHelpernull_Int64) LT(x null.Int64) qm.QueryMod {
+func (w whereHelpertime_Time) LT(x time.Time) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelpernull_Int64) LTE(x null.Int64) qm.QueryMod {
+func (w whereHelpertime_Time) LTE(x time.Time) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpernull_Int64) GT(x null.Int64) qm.QueryMod {
+func (w whereHelpertime_Time) GT(x time.Time) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelpernull_Int64) GTE(x null.Int64) qm.QueryMod {
+func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
-
-func (w whereHelpernull_Int64) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Int64) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
 type whereHelperbool struct{ field string }
 
@@ -146,13 +142,13 @@ func (w whereHelperbool) GTE(x bool) qm.QueryMod { return qmhelper.Where(w.field
 var TokenWhere = struct {
 	ID        whereHelperint
 	Key       whereHelperstring
-	CreatedAt whereHelpernull_Int64
+	CreatedAt whereHelpertime_Time
 	Expired   whereHelperbool
 	CreatedBy whereHelperint
 }{
 	ID:        whereHelperint{field: "`token`.`id`"},
 	Key:       whereHelperstring{field: "`token`.`key`"},
-	CreatedAt: whereHelpernull_Int64{field: "`token`.`created_at`"},
+	CreatedAt: whereHelpertime_Time{field: "`token`.`created_at`"},
 	Expired:   whereHelperbool{field: "`token`.`expired`"},
 	CreatedBy: whereHelperint{field: "`token`.`created_by`"},
 }
@@ -186,8 +182,8 @@ type tokenL struct{}
 
 var (
 	tokenAllColumns            = []string{"id", "key", "created_at", "expired", "created_by"}
-	tokenColumnsWithoutDefault = []string{"id", "key", "created_at", "created_by"}
-	tokenColumnsWithDefault    = []string{"expired"}
+	tokenColumnsWithoutDefault = []string{"id", "key", "created_by"}
+	tokenColumnsWithDefault    = []string{"created_at", "expired"}
 	tokenPrimaryKeyColumns     = []string{"id"}
 	tokenGeneratedColumns      = []string{}
 )
@@ -684,8 +680,8 @@ func (o *Token) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 	if !boil.TimestampsAreSkipped(ctx) {
 		currTime := time.Now().In(boil.GetLocation())
 
-		if queries.MustTime(o.CreatedAt).IsZero() {
-			queries.SetScanner(&o.CreatedAt, currTime)
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
 		}
 	}
 
@@ -917,8 +913,8 @@ func (o *Token) Upsert(ctx context.Context, exec boil.ContextExecutor, updateCol
 	if !boil.TimestampsAreSkipped(ctx) {
 		currTime := time.Now().In(boil.GetLocation())
 
-		if queries.MustTime(o.CreatedAt).IsZero() {
-			queries.SetScanner(&o.CreatedAt, currTime)
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
 		}
 	}
 
