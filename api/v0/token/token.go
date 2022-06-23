@@ -6,20 +6,20 @@ import (
 	"net/http"
 )
 
-func GetToken(ctx *fiber.Ctx) error {
-	ctn, err := helpers.GetContainer(ctx)
+func GetToken(c *fiber.Ctx) error {
+	ctn, err := helpers.GetContainer(c)
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(err.Error())
+		return c.Status(http.StatusInternalServerError).JSON(err.Error())
 	}
 	biz, err := ctn.SafeGetBusinessToken()
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(err.Error())
+		return c.Status(http.StatusInternalServerError).JSON(err.Error())
 	}
 
 	generatedToken, err := biz.Generate()
 	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(err.Error())
+		return c.Status(http.StatusInternalServerError).JSON(err.Error())
 	}
 
-	return ctx.JSON(generatedToken)
+	return c.JSON(generatedToken)
 }

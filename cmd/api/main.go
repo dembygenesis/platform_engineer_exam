@@ -17,12 +17,12 @@ import (
 )
 
 // initAPI boots our REST API connections
-func initAPI(container *dic.Container, port string) {
+func initAPI(ctn *dic.Container, port string) {
 	app := fiber.New(fiber.Config{
 		BodyLimit: 20971520,
 	})
 
-	app.Use(helpers.AddContainerInstance(container))
+	app.Use(helpers.AddContainerInstance(ctn))
 	app.Use(recover.New())
 	app.Use(cors.New())
 	app.Use(logger.New(logger.Config{
@@ -32,7 +32,7 @@ func initAPI(container *dic.Container, port string) {
 	}))
 
 	app.Static("/", "./public")
-	api.GetRouter(app)
+	api.GetRouter(app, ctn)
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)

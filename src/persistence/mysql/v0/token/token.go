@@ -57,6 +57,6 @@ func (p *PersistenceToken) Validate(s string) error {
 	return nil
 }
 
-func NewPersistenceToken(db *sql.DB) (*PersistenceToken, error) {
-	return &PersistenceToken{db}, nil
+func NewPersistenceToken(db *sql.DB) *PersistenceToken {
+	return &PersistenceToken{db}
 }

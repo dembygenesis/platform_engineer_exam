@@ -6,10 +6,11 @@ import (
 	"github.com/sarulabs/di/v2"
 	"github.com/sarulabs/dingo/v4"
 
-	token1 "github.com/dembygenesis/platform_engineer_exam/business/token"
+	token1 "github.com/dembygenesis/platform_engineer_exam/business/v0/token"
 	config "github.com/dembygenesis/platform_engineer_exam/src/config"
-	v "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0"
+	mysql "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql"
 	token "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/token"
+	user "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/user"
 )
 
 func getDiDefs(provider dingo.Provider) []di.Def {
@@ -66,23 +67,23 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 			Build: func(ctn di.Container) (interface{}, error) {
 				d, err := provider.Get("mysql_connection")
 				if err != nil {
-					var eo *v.MYSQLConnection
+					var eo *mysql.MYSQLConnection
 					return eo, err
 				}
 				pi0, err := ctn.SafeGet("config")
 				if err != nil {
-					var eo *v.MYSQLConnection
+					var eo *mysql.MYSQLConnection
 					return eo, err
 				}
 				p0, ok := pi0.(*config.Config)
 				if !ok {
-					var eo *v.MYSQLConnection
+					var eo *mysql.MYSQLConnection
 					return eo, errors.New("could not cast parameter 0 to *config.Config")
 				}
-				b, ok := d.Build.(func(*config.Config) (*v.MYSQLConnection, error))
+				b, ok := d.Build.(func(*config.Config) (*mysql.MYSQLConnection, error))
 				if !ok {
-					var eo *v.MYSQLConnection
-					return eo, errors.New("could not cast build function to func(*config.Config) (*v.MYSQLConnection, error)")
+					var eo *mysql.MYSQLConnection
+					return eo, errors.New("could not cast build function to func(*config.Config) (*mysql.MYSQLConnection, error)")
 				}
 				return b(p0)
 			},
@@ -102,15 +103,43 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 					var eo *token.PersistenceToken
 					return eo, err
 				}
-				p0, ok := pi0.(*v.MYSQLConnection)
+				p0, ok := pi0.(*mysql.MYSQLConnection)
 				if !ok {
 					var eo *token.PersistenceToken
-					return eo, errors.New("could not cast parameter 0 to *v.MYSQLConnection")
+					return eo, errors.New("could not cast parameter 0 to *mysql.MYSQLConnection")
 				}
-				b, ok := d.Build.(func(*v.MYSQLConnection) (*token.PersistenceToken, error))
+				b, ok := d.Build.(func(*mysql.MYSQLConnection) (*token.PersistenceToken, error))
 				if !ok {
 					var eo *token.PersistenceToken
-					return eo, errors.New("could not cast build function to func(*v.MYSQLConnection) (*token.PersistenceToken, error)")
+					return eo, errors.New("could not cast build function to func(*mysql.MYSQLConnection) (*token.PersistenceToken, error)")
+				}
+				return b(p0)
+			},
+			Unshared: false,
+		},
+		{
+			Name:  "mysql_user_persistence",
+			Scope: "",
+			Build: func(ctn di.Container) (interface{}, error) {
+				d, err := provider.Get("mysql_user_persistence")
+				if err != nil {
+					var eo *user.PersistenceUser
+					return eo, err
+				}
+				pi0, err := ctn.SafeGet("mysql_connection")
+				if err != nil {
+					var eo *user.PersistenceUser
+					return eo, err
+				}
+				p0, ok := pi0.(*mysql.MYSQLConnection)
+				if !ok {
+					var eo *user.PersistenceUser
+					return eo, errors.New("could not cast parameter 0 to *mysql.MYSQLConnection")
+				}
+				b, ok := d.Build.(func(*mysql.MYSQLConnection) (*user.PersistenceUser, error))
+				if !ok {
+					var eo *user.PersistenceUser
+					return eo, errors.New("could not cast build function to func(*mysql.MYSQLConnection) (*user.PersistenceUser, error)")
 				}
 				return b(p0)
 			},

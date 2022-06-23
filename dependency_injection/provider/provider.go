@@ -1,13 +1,13 @@
 package provider
 
 import (
-	BusinessToken "github.com/dembygenesis/platform_engineer_exam/business/token"
+	BusinessToken "github.com/dembygenesis/platform_engineer_exam/business/v0/token"
 	"github.com/dembygenesis/platform_engineer_exam/src/config"
-	v0 "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0"
+	v0 "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql"
 	token2 "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/token"
+	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/user"
 	"github.com/pkg/errors"
 	"github.com/sarulabs/dingo/v4"
-	"log"
 )
 
 type Provider struct {
@@ -16,8 +16,10 @@ type Provider struct {
 
 const (
 	configLayer                = "config"
+	logger                     = "logger"
 	mysqlConnection            = "mysql_connection"
 	mysqlTokenPersistenceLayer = "mysql_token_persistence"
+	mysqlUserPersistenceLayer  = "mysql_user_persistence"
 	businessToken              = "business_token"
 )
 
@@ -39,11 +41,13 @@ func getServices() (*[]dingo.Def, error) {
 		{
 			Name: mysqlTokenPersistenceLayer,
 			Build: func(connection *v0.MYSQLConnection) (*token2.PersistenceToken, error) {
-				persistence, err := token2.NewPersistenceToken(connection.DB)
-				if err != nil {
-					log.Fatalf("error establishing the mysql persistence: %v", err.Error())
-				}
-				return persistence, nil
+				return token2.NewPersistenceToken(connection.DB), nil
+			},
+		},
+		{
+			Name: mysqlUserPersistenceLayer,
+			Build: func(connection *v0.MYSQLConnection) (*user.PersistenceUser, error) {
+				return user.NewPersistenceUser(connection.DB), nil
 			},
 		},
 		{
