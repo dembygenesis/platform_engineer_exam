@@ -42,5 +42,9 @@ func NewMYSQLConnection(c config.DatabaseCredentials) (*MYSQLConnection, error) 
 	}
 	db.SetConnMaxLifetime(time.Minute * 60)
 	conn.DB = db
+	err = conn.Ping()
+	if err != nil {
+		return nil, errors.Wrap(err, errDatabasePingError.Error())
+	}
 	return &conn, nil
 }

@@ -11,7 +11,7 @@ import (
 
 func Hash(str string) string {
 	hash := sha1.New()
-	hash.Write([]byte(s))
+	hash.Write([]byte(str))
 	return string(hash.Sum(nil))
 }
 

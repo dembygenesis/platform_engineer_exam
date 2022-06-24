@@ -2,6 +2,11 @@ package models
 
 import "time"
 
+var (
+	SevenDaysLapse     = (7 * time.Hour * 24).Hours()
+	ThirtySecondsLapse = (1 * time.Minute / 2).Hours()
+)
+
 type Token struct {
 	Id        int       `json:"id" db:"id"`
 	Key       string    `json:"key" db:"key"`

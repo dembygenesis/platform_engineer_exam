@@ -3,8 +3,12 @@ module github.com/dembygenesis/platform_engineer_exam
 go 1.18
 
 require (
+	github.com/Jeffail/gabs v1.4.0
 	github.com/atotto/clipboard v0.1.4
 	github.com/friendsofgo/errors v0.9.2
+	github.com/go-playground/locales v0.14.0
+	github.com/go-playground/universal-translator v0.18.0
+	github.com/go-playground/validator/v10 v10.11.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gofiber/fiber/v2 v2.34.1
 	github.com/magiconair/properties v1.8.6
@@ -13,6 +17,7 @@ require (
 	github.com/sarulabs/dingo/v4 v4.2.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.12.0
+	github.com/ssoroka/slice v0.0.0-20220402005549-78f0cea3df8b
 	github.com/volatiletech/sqlboiler/v4 v4.11.0
 	github.com/volatiletech/strmangle v0.0.4
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
@@ -23,6 +28,7 @@ require (
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/klauspost/compress v1.15.0 // indirect
+	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.2 // indirect

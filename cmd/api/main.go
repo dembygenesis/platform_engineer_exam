@@ -65,14 +65,14 @@ func main() {
 		log.Fatalf("error trying to fetch the config from the container: %v", err.Error())
 	}
 
-	mysql, err := ctn.SafeGetMysqlConnection()
+	/*mysql, err := ctn.SafeGetMysqlConnection()
 	if err != nil {
 		log.Fatalf("error trying to fetch the mysql connection from the container: %v", err.Error())
 	}
 	err = mysql.Ping()
 	if err != nil {
 		log.Fatalf("error trying to ping from the mysql persistence: %v", err.Error())
-	}
+	}*/
 
 	initAPI(ctn, strconv.Itoa(cfg.API.Port))
 }

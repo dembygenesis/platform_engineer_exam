@@ -82,7 +82,7 @@ func (p *PersistenceToken) Generate(ctx context.Context, createdBy int) (string,
 }
 
 // Validate checks if the token has hit it's 7 day expiry, and if it has - updates the flag "expired" to be true
-func (p *PersistenceToken) Validate(ctx context.Context, str string) error {
+func (p *PersistenceToken) Validate(ctx context.Context, str string, lapseLimit float64) error {
 	logger := common.GetLogger(ctx)
 	token, err := models_schema.Tokens(
 		models_schema.TokenWhere.Key.EQ(str),

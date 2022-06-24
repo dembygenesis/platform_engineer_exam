@@ -8,6 +8,7 @@ import (
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/user"
 	"github.com/pkg/errors"
 	"github.com/sarulabs/dingo/v4"
+	"log"
 )
 
 type Provider struct {
@@ -29,13 +30,21 @@ func getServices() (*[]dingo.Def, error) {
 		{
 			Name: configLayer,
 			Build: func() (*config.Config, error) {
-				return config.NewConfig(".env")
+				cfg, err := config.NewConfig(".env")
+				if err != nil {
+					log.Fatalf("error setting up the config layer: :%v", err.Error())
+				}
+				return cfg, nil
 			},
 		},
 		{
 			Name: mysqlConnection,
 			Build: func(config *config.Config) (*v0.MYSQLConnection, error) {
-				return v0.NewMYSQLConnection(config.DatabaseCredentials)
+				mysql, err := v0.NewMYSQLConnection(config.DatabaseCredentials)
+				if err != nil {
+					log.Fatalf("error establishing connection to MYSQL: :%v", err.Error())
+				}
+				return mysql, err
 			},
 		},
 		{
