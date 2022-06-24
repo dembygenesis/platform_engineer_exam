@@ -16,8 +16,7 @@ type Provider struct {
 }
 
 const (
-	configLayer = "config"
-	// logger                     = "logger"
+	configLayer                = "config"
 	mysqlConnection            = "mysql_connection"
 	mysqlTokenPersistenceLayer = "mysql_token_persistence"
 	mysqlUserPersistenceLayer  = "mysql_user_persistence"

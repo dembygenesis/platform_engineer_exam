@@ -2,7 +2,6 @@ package token
 
 import (
 	"github.com/dembygenesis/platform_engineer_exam/api/helpers"
-	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/models_schema"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
@@ -24,7 +23,12 @@ func ValidateToken(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
 
-	err = biz.Validate(c.Context(), token, models.SevenDaysLapse)
+	cfg, err := ctn.SafeGetConfig()
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+	}
+
+	err = biz.Validate(c.Context(), token, cfg.App.TokenLapseDuration, cfg.App.TokenLapseSettings)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}

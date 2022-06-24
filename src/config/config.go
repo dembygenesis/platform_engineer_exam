@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/dembygenesis/platform_engineer_exam/src/utils/validation"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -81,8 +82,10 @@ func NewConfig(configFile string) (*Config, error) {
 	switch config.App.TokenLapseSettings {
 	case "7 Days":
 		fmt.Println("Yo 7 days")
+		config.App.TokenLapseDuration = models.SevenDaysLapse
 	case "30 Seconds":
 		fmt.Println("Yo 30 Seconds")
+		config.App.TokenLapseDuration = models.ThirtySecondsLapse
 	default:
 		return nil, errUnidentifiedTokenLapseDuration
 	}

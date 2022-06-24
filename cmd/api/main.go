@@ -5,6 +5,7 @@ import (
 	"github.com/dembygenesis/platform_engineer_exam/api"
 	"github.com/dembygenesis/platform_engineer_exam/api/helpers"
 	"github.com/dembygenesis/platform_engineer_exam/dependency_injection/dic"
+	"github.com/dembygenesis/platform_engineer_exam/src/config"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -18,7 +19,7 @@ import (
 )
 
 // initAPI boots our REST API connections
-func initAPI(ctn *dic.Container, port string) {
+func initAPI(ctn *dic.Container, cfg *config.Config) {
 	app := fiber.New(fiber.Config{
 		BodyLimit: 20971520,
 	})
@@ -48,6 +49,7 @@ func initAPI(ctn *dic.Container, port string) {
 		}
 	}()
 
+	port := strconv.Itoa(cfg.API.Port)
 	if err := app.Listen(":" + port); err != nil {
 		log.Fatalf("error listening to port: %v, with msg: %v", port, err.Error())
 	}
@@ -74,5 +76,6 @@ func main() {
 		log.Fatalf("error trying to ping from the mysql persistence: %v", err.Error())
 	}*/
 
-	initAPI(ctn, strconv.Itoa(cfg.API.Port))
+	// initAPI(ctn, strconv.Itoa(cfg.API.Port), cfg.App.TokenLapseDuration)
+	initAPI(ctn, cfg)
 }
