@@ -8,8 +8,6 @@ import (
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/user"
 	"github.com/pkg/errors"
 	"github.com/sarulabs/dingo/v4"
-	"github.com/sirupsen/logrus"
-	"os"
 )
 
 type Provider struct {
@@ -17,8 +15,8 @@ type Provider struct {
 }
 
 const (
-	configLayer                = "config"
-	logger                     = "logger"
+	configLayer = "config"
+	// logger                     = "logger"
 	mysqlConnection            = "mysql_connection"
 	mysqlTokenPersistenceLayer = "mysql_token_persistence"
 	mysqlUserPersistenceLayer  = "mysql_user_persistence"
@@ -32,21 +30,6 @@ func getServices() (*[]dingo.Def, error) {
 			Name: configLayer,
 			Build: func() (*config.Config, error) {
 				return config.NewConfig(".env")
-			},
-		},
-		{
-			Name: logger,
-			Build: func() (*logrus.Entry, error) {
-				log := &logrus.Logger{
-					Out: os.Stderr,
-					Formatter: &logrus.TextFormatter{
-						DisableQuote: true,
-					},
-					Hooks:        make(logrus.LevelHooks),
-					Level:        logrus.DebugLevel,
-					ReportCaller: true,
-				}
-				return log.WithField("app", "platform_engineer_exam"), nil
 			},
 		},
 		{

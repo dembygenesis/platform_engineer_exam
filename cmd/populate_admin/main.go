@@ -11,7 +11,7 @@ import (
 	"github.com/dembygenesis/platform_engineer_exam/dependency_injection/dic"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/models_schema"
-	"github.com/dembygenesis/platform_engineer_exam/src/utils/strings_util"
+	"github.com/dembygenesis/platform_engineer_exam/src/utils/strings"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/crypto/bcrypt"
 	"log"
@@ -31,7 +31,7 @@ func main() {
 	name := "Admin User"
 	email := "admin@gmail.com"
 	unhashedPassword := "123456"
-	password, _ := strings_util.Encrypt(unhashedPassword)
+	password, _ := strings.Encrypt(unhashedPassword)
 
 	err = bcrypt.CompareHashAndPassword([]byte(password), []byte(unhashedPassword))
 	/*err = bcrypt.CompareHashAndPassword([]byte("$2a$10$U7Gu/i.MpomFEuGNPq/.OeyUiIEhNpTTinot/eWFO9UuK58weGp02"), []byte("123456"))

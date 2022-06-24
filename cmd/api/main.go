@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"log"
 	"os"
 	"os/signal"
@@ -22,6 +23,7 @@ func initAPI(ctn *dic.Container, port string) {
 		BodyLimit: 20971520,
 	})
 
+	app.Use(requestid.New())
 	app.Use(helpers.AddContainerInstance(ctn))
 	app.Use(recover.New())
 	app.Use(cors.New())

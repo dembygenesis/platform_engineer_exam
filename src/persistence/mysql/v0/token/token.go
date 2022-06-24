@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"database/sql"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/models_schema"
@@ -25,8 +26,8 @@ var (
 	errInsertNewToken   = errors.New("error inserting new token")
 )
 
-// Generate returns a return string in the length range of 6-12
-func (p *PersistenceToken) Generate(createdBy int) (string, error) {
+// Generate returns a unique string in the length range of 6-12 characters
+func (p *PersistenceToken) Generate(ctx context.Context, createdBy int) (string, error) {
 	var randomString string
 	tokenVerifiedUnique := false
 	for !tokenVerifiedUnique {
@@ -56,7 +57,10 @@ func (p *PersistenceToken) Generate(createdBy int) (string, error) {
 	return randomString, nil
 }
 
-func (p *PersistenceToken) Validate(s string) error {
+func (p *PersistenceToken) Validate(ctx context.Context, s string) error {
+	/*token := models_schema.Tokens(
+		models_schema.TokenWhere.Key.EQ(s),
+	).Count(mysql.BoilCtx, )*/
 	return nil
 }
 

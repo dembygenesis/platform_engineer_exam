@@ -7,6 +7,17 @@ import (
 	"net/http"
 )
 
+func ValidateToken(c *fiber.Ctx) error {
+	token := c.Params("token")
+
+	/*ctn, err := helpers.GetContainer(c)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+	}*/
+
+	return c.JSON(token)
+}
+
 func GetToken(c *fiber.Ctx) error {
 	ctn, err := helpers.GetContainer(c)
 	if err != nil {
@@ -22,7 +33,7 @@ func GetToken(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapStrInErrMap("userMeta conversion fails"))
 	}
 
-	generatedToken, err := biz.Generate(userMeta)
+	generatedToken, err := biz.Generate(c.Context(), userMeta)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
