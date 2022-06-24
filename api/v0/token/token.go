@@ -9,13 +9,25 @@ import (
 
 func ValidateToken(c *fiber.Ctx) error {
 	token := c.Params("token")
+	if token == "" {
+		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapStrInErrMap("token is missing"))
+	}
 
-	/*ctn, err := helpers.GetContainer(c)
+	ctn, err := helpers.GetContainer(c)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
-	}*/
+	}
 
-	return c.JSON(token)
+	biz, err := ctn.SafeGetBusinessToken()
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+	}
+
+	err = biz.Validate(c.Context(), token)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+	}
+	return c.Status(http.StatusOK).JSON(true)
 }
 
 func GetToken(c *fiber.Ctx) error {

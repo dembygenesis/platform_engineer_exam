@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func Hash(s string) string {
+func Hash(str string) string {
 	hash := sha1.New()
 	hash.Write([]byte(s))
 	return string(hash.Sum(nil))

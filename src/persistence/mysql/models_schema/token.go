@@ -27,6 +27,7 @@ type Token struct {
 	Key       string    `boil:"key" json:"key" toml:"key" yaml:"key"`
 	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	Revoked   bool      `boil:"revoked" json:"revoked" toml:"revoked" yaml:"revoked"`
+	Expired   bool      `boil:"expired" json:"expired" toml:"expired" yaml:"expired"`
 	CreatedBy int       `boil:"created_by" json:"created_by" toml:"created_by" yaml:"created_by"`
 	ExpiresAt time.Time `boil:"expires_at" json:"expires_at" toml:"expires_at" yaml:"expires_at"`
 
@@ -39,6 +40,7 @@ var TokenColumns = struct {
 	Key       string
 	CreatedAt string
 	Revoked   string
+	Expired   string
 	CreatedBy string
 	ExpiresAt string
 }{
@@ -46,6 +48,7 @@ var TokenColumns = struct {
 	Key:       "key",
 	CreatedAt: "created_at",
 	Revoked:   "revoked",
+	Expired:   "expired",
 	CreatedBy: "created_by",
 	ExpiresAt: "expires_at",
 }
@@ -55,6 +58,7 @@ var TokenTableColumns = struct {
 	Key       string
 	CreatedAt string
 	Revoked   string
+	Expired   string
 	CreatedBy string
 	ExpiresAt string
 }{
@@ -62,6 +66,7 @@ var TokenTableColumns = struct {
 	Key:       "token.key",
 	CreatedAt: "token.created_at",
 	Revoked:   "token.revoked",
+	Expired:   "token.expired",
 	CreatedBy: "token.created_by",
 	ExpiresAt: "token.expires_at",
 }
@@ -149,6 +154,7 @@ var TokenWhere = struct {
 	Key       whereHelperstring
 	CreatedAt whereHelpertime_Time
 	Revoked   whereHelperbool
+	Expired   whereHelperbool
 	CreatedBy whereHelperint
 	ExpiresAt whereHelpertime_Time
 }{
@@ -156,6 +162,7 @@ var TokenWhere = struct {
 	Key:       whereHelperstring{field: "`token`.`key`"},
 	CreatedAt: whereHelpertime_Time{field: "`token`.`created_at`"},
 	Revoked:   whereHelperbool{field: "`token`.`revoked`"},
+	Expired:   whereHelperbool{field: "`token`.`expired`"},
 	CreatedBy: whereHelperint{field: "`token`.`created_by`"},
 	ExpiresAt: whereHelpertime_Time{field: "`token`.`expires_at`"},
 }
@@ -188,9 +195,9 @@ func (r *tokenR) GetCreatedByUser() *User {
 type tokenL struct{}
 
 var (
-	tokenAllColumns            = []string{"id", "key", "created_at", "revoked", "created_by", "expires_at"}
+	tokenAllColumns            = []string{"id", "key", "created_at", "revoked", "expired", "created_by", "expires_at"}
 	tokenColumnsWithoutDefault = []string{"key", "created_by", "expires_at"}
-	tokenColumnsWithDefault    = []string{"id", "created_at", "revoked"}
+	tokenColumnsWithDefault    = []string{"id", "created_at", "revoked", "expired"}
 	tokenPrimaryKeyColumns     = []string{"id"}
 	tokenGeneratedColumns      = []string{}
 )

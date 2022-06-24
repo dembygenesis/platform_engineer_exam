@@ -10,7 +10,7 @@ type dataPersistence interface {
 	Generate(ctx context.Context, createdBy int) (string, error)
 
 	// Validate checks if a string is registered
-	Validate(ctx context.Context, s string) error
+	Validate(ctx context.Context, str string) error
 }
 
 type BusinessToken struct {
@@ -21,8 +21,8 @@ func (b *BusinessToken) Generate(ctx context.Context, user *models_schema.User) 
 	return b.dataLayer.Generate(ctx, user.ID)
 }
 
-func (b *BusinessToken) Validate(ctx context.Context, s string) error {
-	return b.dataLayer.Validate(ctx, s)
+func (b *BusinessToken) Validate(ctx context.Context, str string) error {
+	return b.dataLayer.Validate(ctx, str)
 }
 
 func NewBusinessToken(mysqlDataPersistence dataPersistence) *BusinessToken {

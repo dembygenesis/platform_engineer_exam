@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	user = "user"
-	pass = "pass"
+	userKey = "user"
+	passKey = "pass"
 )
 
 // ProtectedRoute guards a route using the "Basic Auth" protocol
@@ -23,7 +23,6 @@ func ProtectedRoute(ctn *dic.Container) func(c *fiber.Ctx) error {
 		Authorizer: func(user, pass string) bool {
 			matched, _, err := userPersistence.BasicAuth(user, pass)
 			if err != nil {
-
 				return false
 			}
 			if !matched {
@@ -35,12 +34,11 @@ func ProtectedRoute(ctn *dic.Container) func(c *fiber.Ctx) error {
 			logger := common.GetLogger(c.Context())
 			logger.WithFields(logrus.Fields{
 				"msg": "Unauthorized",
-				// "user": c.GetReqHeaders("user"),
 			}).Error("error_protected_route")
 			return c.Status(http.StatusUnauthorized).JSON(helpers.WrapStrInErrMap("Unauthorized"))
 		},
-		ContextUsername: user,
-		ContextPassword: pass,
+		ContextUsername: userKey,
+		ContextPassword: passKey,
 	})
 }
 
@@ -52,8 +50,8 @@ func ExtractAuthedUserMeta(c *fiber.Ctx) error {
 	logger := common.GetLogger(c.Context())
 	userPersistence := ctn.GetMysqlUserPersistence()
 
-	user := c.Locals(user).(string)
-	pass := c.Locals(pass).(string)
+	user := c.Locals(userKey).(string)
+	pass := c.Locals(passKey).(string)
 
 	_, userMeta, err := userPersistence.BasicAuth(user, pass)
 	if err != nil {
