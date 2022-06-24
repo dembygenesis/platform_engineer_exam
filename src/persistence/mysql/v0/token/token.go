@@ -33,11 +33,22 @@ var (
 var (
 	errCheckUniqueToken = errors.New("error checking for unique tokens")
 	errFetchToken       = errors.New("error fetching token")
+	errFetchTokens      = errors.New("error fetching tokens")
 	errTokenRevoked     = errors.New("token is revoked")
 	errInsertNewToken   = errors.New("error inserting new token")
 	errTokenNotFound    = errors.New("error, token not found")
 	errTokenExpired     = errors.New("error, token has already expired")
 )
+
+// GetAll returns all the tokens
+func (p *PersistenceToken) GetAll(ctx context.Context) ([]models_schema.Token, error) {
+	var container []models_schema.Token
+	err := models_schema.Tokens().Bind(mysql.BoilCtx, p.db, &container)
+	if err != nil {
+		return nil, errors.Wrap(err, errFetchTokens.Error())
+	}
+	return container, nil
+}
 
 // Generate returns a unique string in the length range of 6-12 characters
 func (p *PersistenceToken) Generate(ctx context.Context, createdBy int) (string, error) {

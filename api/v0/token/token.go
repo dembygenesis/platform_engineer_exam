@@ -30,6 +30,24 @@ func ValidateToken(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(true)
 }
 
+func GetAll(c *fiber.Ctx) error {
+	ctn, err := helpers.GetContainer(c)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+	}
+	biz, err := ctn.SafeGetBusinessToken()
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+	}
+
+	tokens, err := biz.GetAll(c.Context())
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+	}
+
+	return c.Status(http.StatusCreated).JSON(tokens)
+}
+
 func GetToken(c *fiber.Ctx) error {
 	ctn, err := helpers.GetContainer(c)
 	if err != nil {

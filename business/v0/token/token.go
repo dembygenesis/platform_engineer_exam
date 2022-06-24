@@ -6,6 +6,8 @@ import (
 )
 
 type dataPersistence interface {
+	GetAll(ctx context.Context) ([]models_schema.Token, error)
+
 	// Generate creates a new 6-12 digit authentication on token
 	Generate(ctx context.Context, createdBy int) (string, error)
 
@@ -15,6 +17,10 @@ type dataPersistence interface {
 
 type BusinessToken struct {
 	dataLayer dataPersistence
+}
+
+func (b *BusinessToken) GetAll(ctx context.Context) ([]models_schema.Token, error) {
+	return b.dataLayer.GetAll(ctx)
 }
 
 func (b *BusinessToken) Generate(ctx context.Context, user *models_schema.User) (string, error) {
