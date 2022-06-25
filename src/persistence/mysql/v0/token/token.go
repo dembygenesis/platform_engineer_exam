@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/models_schema"
 	"github.com/dembygenesis/platform_engineer_exam/src/utils/common"
@@ -11,6 +12,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"math/rand"
 	"time"
 )
@@ -35,12 +37,29 @@ var (
 )
 
 // GetAll returns all the tokens
-func (p *PersistenceToken) GetAll(ctx context.Context) ([]models_schema.Token, error) {
-	var container []models_schema.Token
-	err := models_schema.Tokens().Bind(mysql.BoilCtx, p.db, &container)
+func (p *PersistenceToken) GetAll(ctx context.Context) ([]models.Token, error) {
+	var container []models.Token
+	/*err := models_schema.Tokens().Bind(mysql.BoilCtx, p.db, &container)
+	if err != nil {
+		return nil, errors.Wrap(err, errFetchTokens.Error())
+	}*/
+
+	err := models_schema.Tokens(
+		qm.InnerJoin("user u ON u.id = token.created_by"),
+		qm.Select([]string{
+			"token.id AS id",
+			"token.key AS `key`",
+			"token.created_at AS created_at",
+			"token.revoked AS revoked",
+			"token.expired AS expired",
+			"token.expires_at AS expires_at",
+			"u.name AS created_by",
+		}...),
+	).Bind(mysql.BoilCtx, p.db, &container)
 	if err != nil {
 		return nil, errors.Wrap(err, errFetchTokens.Error())
 	}
+
 	return container, nil
 }
 

@@ -2,11 +2,12 @@ package token
 
 import (
 	"context"
+	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/models_schema"
 )
 
 type dataPersistence interface {
-	GetAll(ctx context.Context) ([]models_schema.Token, error)
+	GetAll(ctx context.Context) ([]models.Token, error)
 
 	// Generate creates a new 6-12 digit authentication on token
 	Generate(ctx context.Context, createdBy int) (string, error)
@@ -19,7 +20,7 @@ type BusinessToken struct {
 	dataLayer dataPersistence
 }
 
-func (b *BusinessToken) GetAll(ctx context.Context) ([]models_schema.Token, error) {
+func (b *BusinessToken) GetAll(ctx context.Context) ([]models.Token, error) {
 	return b.dataLayer.GetAll(ctx)
 }
 
