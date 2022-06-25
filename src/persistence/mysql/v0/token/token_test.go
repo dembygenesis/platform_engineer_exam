@@ -3,6 +3,7 @@ package token
 import (
 	"context"
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
+	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"regexp"
@@ -111,7 +112,28 @@ func TestPersistenceToken_Generate_FailInsertNewToken(t *testing.T) {
 	assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
 }
 
+func configureMockValidatePassGetToken(mock sqlmock.Sqlmock, key string) {
+	sqlGetToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?) LIMIT 1;"
+	rows := sqlmock.NewRows([]string{"key", "expired", "revoked"}).AddRow(key, false, false)
+	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnRows(rows)
+}
+
 func TestPersistenceToken_Validate_HappyPath(t *testing.T) {
+	randomString := generateRandomCharacters(12)
+
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	lapseLimit := models.SevenDaysLapse
+	lapseType := "7 Days"
+
+	configureMockValidatePassGetToken(mock, randomString)
+	persistenceToken := PersistenceToken{db: db}
+	err = persistenceToken.Validate(context.Background(), randomString, lapseLimit, lapseType)
+	require.NoError(t, err)
+}
+
+func TestPersistenceToken_Validate_FailErrTokenNotFound(t *testing.T) {
 
 }
 
