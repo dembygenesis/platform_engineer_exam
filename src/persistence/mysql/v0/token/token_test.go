@@ -194,12 +194,58 @@ func TestPersistenceToken_Validate_FailErrFetchToken(t *testing.T) {
 	})
 }
 
-func TestPersistenceToken_Validate_FailErrRevoked(t *testing.T) {
-
+func configureMockValidatePassGetTokenFailRevoked(mock sqlmock.Sqlmock, key string) {
+	sqlGetToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?) LIMIT 1;"
+	rows := sqlmock.NewRows([]string{"key", "expired", "revoked"}).AddRow(key, false, true)
+	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnRows(rows)
 }
 
-func TestPersistenceToken_Validate_FailErrExpired(t *testing.T) {
+func configureMockValidatePassGetTokenFailExpired(mock sqlmock.Sqlmock, key string) {
+	sqlGetToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?) LIMIT 1;"
+	rows := sqlmock.NewRows([]string{"key", "expired", "revoked"}).AddRow(key, true, false)
+	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnRows(rows)
+}
 
+func TestPersistenceToken_Validate_FailErrTokenRevoked(t *testing.T) {
+	randomString := generateRandomCharacters(12)
+
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	lapseLimit := models.SevenDaysLapse
+	lapseType := "7 Days"
+
+	configureMockValidatePassGetTokenFailRevoked(mock, randomString)
+	persistenceToken := PersistenceToken{db: db}
+	t.Run("Test Validate Fail Err Token Revoked", func(t *testing.T) {
+		err = persistenceToken.Validate(context.Background(), randomString, lapseLimit, lapseType)
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errTokenRevoked.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
+}
+
+func TestPersistenceToken_Validate_FailErrTokenExpired(t *testing.T) {
+	randomString := generateRandomCharacters(12)
+
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	lapseLimit := models.SevenDaysLapse
+	lapseType := "7 Days"
+
+	configureMockValidatePassGetTokenFailExpired(mock, randomString)
+	persistenceToken := PersistenceToken{db: db}
+	t.Run("Test Validate Fail Err Token Expired", func(t *testing.T) {
+		err = persistenceToken.Validate(context.Background(), randomString, lapseLimit, lapseType)
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errTokenExpired.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
 }
 
 func TestPersistenceToken_Validate_FailErrDeterminedExpired(t *testing.T) {
