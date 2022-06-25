@@ -135,8 +135,10 @@ func TestPersistenceToken_Validate_HappyPath(t *testing.T) {
 
 	configureMockValidatePassGetToken(mock, randomString)
 	persistenceToken := PersistenceToken{db: db}
-	err = persistenceToken.Validate(context.Background(), randomString, lapseLimit, lapseType)
-	require.NoError(t, err)
+	t.Run("Test Validate Happy Path", func(t *testing.T) {
+		err = persistenceToken.Validate(context.Background(), randomString, lapseLimit, lapseType)
+		require.NoError(t, err)
+	})
 }
 
 func TestPersistenceToken_Validate_FailErrTokenNotFound(t *testing.T) {

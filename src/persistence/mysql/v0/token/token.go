@@ -122,7 +122,6 @@ func (p *PersistenceToken) Validate(ctx context.Context, str string, lapseLimit 
 			return errors.Wrap(err, errFetchToken.Error())
 		}
 	}
-	fmt.Println("========token========", token)
 	if token.Revoked {
 		return errTokenRevoked
 	}
