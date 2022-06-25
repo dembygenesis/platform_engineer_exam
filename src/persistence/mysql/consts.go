@@ -6,5 +6,6 @@ import (
 )
 
 var (
-	BoilCtx = boil.WithDebug(context.Background(), true)
+	BoilCtx      = boil.WithDebug(context.Background(), true)
+	BoilCtxNoLog = boil.WithDebug(context.Background(), false)
 )

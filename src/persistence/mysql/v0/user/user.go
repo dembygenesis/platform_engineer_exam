@@ -20,7 +20,7 @@ var (
 func (p *PersistenceUser) BasicAuth(user, pass string) (bool, *models_schema.User, error) {
 	match, err := models_schema.Users(
 		models_schema.UserWhere.Email.EQ(user),
-	).One(mysql.BoilCtx, p.db)
+	).One(mysql.BoilCtxNoLog, p.db)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, match, nil
