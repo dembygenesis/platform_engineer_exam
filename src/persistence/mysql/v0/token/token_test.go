@@ -108,12 +108,14 @@ func TestPersistenceToken_Generate_FailInsertNewToken(t *testing.T) {
 	configureMockGenerateFailInsertToken(mock, randomString, createdAt)
 
 	persistenceToken := PersistenceToken{db: db}
-	_, err = persistenceToken.Generate(context.Background(), createdById, randomString, &createdAt)
-	require.Error(t, err)
+	t.Run("Test Generate Fail Insert New Token", func(t *testing.T) {
+		_, err = persistenceToken.Generate(context.Background(), createdById, randomString, &createdAt)
+		require.Error(t, err)
 
-	errMsg := err.Error()
-	wantErrMsg := errInsertNewToken.Error()
-	assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+		errMsg := err.Error()
+		wantErrMsg := errInsertNewToken.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
 }
 
 func configureMockValidatePassGetToken(mock sqlmock.Sqlmock, key string) {
