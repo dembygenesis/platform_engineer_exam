@@ -3,6 +3,7 @@ package token
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/stretchr/testify/assert"
@@ -254,19 +255,9 @@ func configureMockValidatePassGetTokenFailDeterminedExpired(mock sqlmock.Sqlmock
 	expiresAt := time.Now()
 	createdAt := expiresAt.AddDate(0, 0, -8)
 
-	rows := sqlmock.NewRows([]string{
-		"key",
-		"expired",
-		"revoked",
-		"created_at",
-		"expires_at",
-	}).AddRow(
-		key,
-		false,
-		false,
-		createdAt,
-		expiresAt,
-	)
+	headers := []string{"key", "expired", "revoked", "created_at", "expires_at"}
+	data := []driver.Value{key, false, false, createdAt, expiresAt}
+	rows := sqlmock.NewRows(headers).AddRow(data...)
 	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnRows(rows)
 }
 
@@ -288,5 +279,81 @@ func TestPersistenceToken_Validate_FailErrDeterminedExpired(t *testing.T) {
 		errMsg := err.Error()
 		wantErrMsg := errTokenDeterminedExpired.Error()
 		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
+}
+
+func configureMockGetAllFetchTokensSuccess(mock sqlmock.Sqlmock) {
+	sqlFetchTokens := "SELECT token.id AS id, token.key AS `key`, token.created_at AS created_at, token.revoked AS revoked, token.expired AS expired, token.expires_at AS expires_at, u.name AS created_by FROM `token` INNER JOIN user u ON u.id = token.created_by;"
+
+	headers := []string{
+		"id",
+		"`key`",
+		"created_at",
+		"revoked",
+		"expired",
+		"expires_at",
+		"created_by",
+	}
+	data := []driver.Value{
+		1,
+		"abc",
+		time.Now(),
+		true,
+		true,
+		time.Now(),
+		"Demby",
+	}
+	rows := sqlmock.NewRows(headers).AddRow(data...)
+	mock.ExpectQuery(regexp.QuoteMeta(sqlFetchTokens)).WillReturnRows(rows)
+}
+
+func TestPersistenceToken_GetAll_HappyPath(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	configureMockGetAllFetchTokensSuccess(mock)
+
+	persistenceToken := PersistenceToken{db: db}
+	res, err := persistenceToken.GetAll(context.Background())
+
+	t.Run("Test GetAll Happy Path", func(t *testing.T) {
+		require.NoError(t, err)
+
+		resLength := len(res)
+		require.Equal(t, resLength > 0, resLength)
+	})
+}
+
+func configureMockGetAllFetchTokensFail(mock sqlmock.Sqlmock) {
+	sqlFetchTokens := "SELECT token.id AS id, token.key AS `key`, token.created_at AS created_at, token.revoked AS revoked, token.expired AS expired, token.expires_at AS expires_at, u.name AS created_by FROM `token` INNER JOIN user u ON u.id = token.created_by;"
+
+	mock.ExpectQuery(regexp.QuoteMeta(sqlFetchTokens)).WillReturnError(errFetchToken)
+}
+
+func TestPersistenceToken_GetAll_FailPath(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	configureMockGetAllFetchTokensFail(mock)
+
+	persistenceToken := PersistenceToken{db: db}
+	_, err = persistenceToken.GetAll(context.Background())
+
+	t.Run("Test GetAll Fail Path", func(t *testing.T) {
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errFetchTokens.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
+}
+
+func TestNewPersistenceToken(t *testing.T) {
+	db, _, err := sqlmock.New()
+	require.NoError(t, err)
+
+	persistenceToken := NewPersistenceToken(db)
+	t.Run("Test NewPersistenceToken", func(t *testing.T) {
+		require.NotNil(t, persistenceToken)
 	})
 }
