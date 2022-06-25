@@ -248,6 +248,45 @@ func TestPersistenceToken_Validate_FailErrTokenExpired(t *testing.T) {
 	})
 }
 
-func TestPersistenceToken_Validate_FailErrDeterminedExpired(t *testing.T) {
+func configureMockValidatePassGetTokenFailDeterminedExpired(mock sqlmock.Sqlmock, key string) {
+	sqlGetToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?) LIMIT 1;"
 
+	expiresAt := time.Now()
+	createdAt := expiresAt.AddDate(0, 0, -8)
+
+	rows := sqlmock.NewRows([]string{
+		"key",
+		"expired",
+		"revoked",
+		"created_at",
+		"expires_at",
+	}).AddRow(
+		key,
+		false,
+		false,
+		createdAt,
+		expiresAt,
+	)
+	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnRows(rows)
+}
+
+func TestPersistenceToken_Validate_FailErrDeterminedExpired(t *testing.T) {
+	randomString := generateRandomCharacters(12)
+
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	lapseLimit := models.SevenDaysLapse
+	lapseType := "7 Days"
+
+	configureMockValidatePassGetTokenFailDeterminedExpired(mock, randomString)
+	persistenceToken := PersistenceToken{db: db}
+	t.Run("Test Validate Fail Err Token Determined Expired", func(t *testing.T) {
+		err = persistenceToken.Validate(context.Background(), randomString, lapseLimit, lapseType)
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errTokenDeterminedExpired.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
 }

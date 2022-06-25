@@ -27,13 +27,14 @@ const (
 )
 
 var (
-	errCheckUniqueToken = errors.New("error checking for unique tokens")
-	errFetchToken       = errors.New("error fetching token")
-	errFetchTokens      = errors.New("error fetching tokens")
-	errTokenRevoked     = errors.New("error, token is revoked")
-	errInsertNewToken   = errors.New("error inserting new token")
-	errTokenNotFound    = errors.New("error, token not found")
-	errTokenExpired     = errors.New("error, token has already expired")
+	errCheckUniqueToken       = errors.New("error checking for unique tokens")
+	errFetchToken             = errors.New("error fetching token")
+	errFetchTokens            = errors.New("error fetching tokens")
+	errTokenRevoked           = errors.New("error, token is revoked")
+	errInsertNewToken         = errors.New("error inserting new token")
+	errTokenNotFound          = errors.New("error, token not found")
+	errTokenExpired           = errors.New("error, token has already expired")
+	errTokenDeterminedExpired = errors.New("error, token has already expired")
 )
 
 // GetAll returns all the tokens
@@ -145,7 +146,7 @@ func (p *PersistenceToken) Validate(ctx context.Context, str string, lapseLimit 
 		logger.WithFields(logrus.Fields{
 			"msg": fmt.Sprintf("Lapsed token detected, with lapse type: '%v'.", lapseType),
 		}).Error("error_validate")
-		return errTokenExpired
+		return errTokenDeterminedExpired
 	}
 	return nil
 }

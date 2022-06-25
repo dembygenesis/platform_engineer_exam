@@ -3,8 +3,8 @@ package models
 import "time"
 
 var (
-	SevenDaysLapse     = (7 * time.Hour * 24).Hours()
-	ThirtySecondsLapse = (1 * time.Minute / 2).Hours()
+	SevenDaysLapse     = (7 * time.Hour * 24).Hours() / 7
+	ThirtySecondsLapse = (1 * time.Minute / 2).Hours() / 7
 )
 
 type Token struct {
