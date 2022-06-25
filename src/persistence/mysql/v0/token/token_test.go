@@ -2,6 +2,7 @@ package token
 
 import (
 	"context"
+	"database/sql"
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/stretchr/testify/assert"
@@ -141,12 +142,56 @@ func TestPersistenceToken_Validate_HappyPath(t *testing.T) {
 	})
 }
 
-func TestPersistenceToken_Validate_FailErrTokenNotFound(t *testing.T) {
+func configureMockValidateFailErrTokenNotFound(mock sqlmock.Sqlmock, key string) {
+	sqlGetToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?) LIMIT 1;"
+	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnError(sql.ErrNoRows)
+}
 
+func TestPersistenceToken_Validate_FailErrTokenNotFound(t *testing.T) {
+	randomString := generateRandomCharacters(12)
+
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	lapseLimit := models.SevenDaysLapse
+	lapseType := "7 Days"
+
+	configureMockValidateFailErrTokenNotFound(mock, randomString)
+	persistenceToken := PersistenceToken{db: db}
+	t.Run("Test Validate Fail Err Token Not Found", func(t *testing.T) {
+		err = persistenceToken.Validate(context.Background(), randomString, lapseLimit, lapseType)
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errTokenNotFound.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
+}
+
+func configureMockValidateFailErrFetchToken(mock sqlmock.Sqlmock, key string) {
+	sqlGetToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?) LIMIT 1;"
+	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnError(errFetchToken)
 }
 
 func TestPersistenceToken_Validate_FailErrFetchToken(t *testing.T) {
+	randomString := generateRandomCharacters(12)
 
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	lapseLimit := models.SevenDaysLapse
+	lapseType := "7 Days"
+
+	configureMockValidateFailErrFetchToken(mock, randomString)
+	persistenceToken := PersistenceToken{db: db}
+	t.Run("Test Validate Fail Err Fetch Token", func(t *testing.T) {
+		err = persistenceToken.Validate(context.Background(), randomString, lapseLimit, lapseType)
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errFetchToken.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
 }
 
 func TestPersistenceToken_Validate_FailErrRevoked(t *testing.T) {
