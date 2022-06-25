@@ -110,3 +110,23 @@ func TestPersistenceToken_Generate_FailInsertNewToken(t *testing.T) {
 	wantErrMsg := errInsertNewToken.Error()
 	assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
 }
+
+func TestPersistenceToken_Validate_HappyPath(t *testing.T) {
+
+}
+
+func TestPersistenceToken_Validate_FailErrFetchToken(t *testing.T) {
+
+}
+
+func TestPersistenceToken_Validate_FailErrRevoked(t *testing.T) {
+
+}
+
+func TestPersistenceToken_Validate_FailErrExpired(t *testing.T) {
+
+}
+
+func TestPersistenceToken_Validate_FailErrDeterminedExpired(t *testing.T) {
+
+}
