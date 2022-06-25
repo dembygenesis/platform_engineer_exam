@@ -98,8 +98,21 @@ func TestPersistenceToken_GenerateFailCheckUniqueToken_HappyPath(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestPersistenceToken_GenerateErrCheckUniqueToken(t *testing.T) {
+func TestPersistenceToken_Generate_FailCheckUniqueToken(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	configureMockGenerateFailFetchToken(mock)
 
+	randomString := generateRandomCharacters(12)
+	createdAt := time.Now()
+	createdById := 3
+
+	persistenceToken := PersistenceToken{db: db}
+	_, err = persistenceToken.Generate(context.Background(), createdById, randomString, &createdAt)
+	require.Error(t, err)
+
+	errMsg := err.Error()
+	wantErrMsg := errFetchToken.Error()
+	assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
 }
 
 func TestPersistenceToken_GenerateErrInsertNewToken(t *testing.T) {
