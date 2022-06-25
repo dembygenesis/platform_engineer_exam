@@ -39,11 +39,6 @@ var (
 // GetAll returns all the tokens
 func (p *PersistenceToken) GetAll(ctx context.Context) ([]models.Token, error) {
 	var container []models.Token
-	/*err := models_schema.Tokens().Bind(mysql.BoilCtx, p.db, &container)
-	if err != nil {
-		return nil, errors.Wrap(err, errFetchTokens.Error())
-	}*/
-
 	err := models_schema.Tokens(
 		qm.InnerJoin("user u ON u.id = token.created_by"),
 		qm.Select([]string{
@@ -64,12 +59,26 @@ func (p *PersistenceToken) GetAll(ctx context.Context) ([]models.Token, error) {
 }
 
 // Generate returns a unique string in the length range of 6-12 characters
-func (p *PersistenceToken) Generate(ctx context.Context, createdBy int) (string, error) {
+func (p *PersistenceToken) Generate(ctx context.Context, createdBy int, randomStringsOverride string, createdAtOverride *time.Time) (string, error) {
+	logger := common.GetLogger(ctx)
 	var randomString string
 	tokenVerifiedUnique := false
+	loops := 0
 	for !tokenVerifiedUnique {
+		if loops > 0 {
+			logger.WithFields(logrus.Fields{
+				"msg":   "number of loops it took to generate the unique key",
+				"loops": loops,
+			}).Info("info_generate")
+		}
+		loops++
+
 		randomizedCharLength := rand.Intn(max-min) + min
-		randomString = generateRandomCharacters(randomizedCharLength)
+		if len(randomStringsOverride) == 0 {
+			randomString = generateRandomCharacters(randomizedCharLength)
+		} else {
+			randomString = randomStringsOverride
+		}
 
 		token, err := models_schema.Tokens(
 			models_schema.TokenWhere.Key.EQ(randomString),
@@ -81,16 +90,22 @@ func (p *PersistenceToken) Generate(ctx context.Context, createdBy int) (string,
 			tokenVerifiedUnique = true
 		}
 	}
+	var createdAt time.Time
+	if createdAtOverride != nil {
+		createdAt = *createdAtOverride
+	}
 	newToken := models_schema.Token{
 		Key:       randomString,
 		CreatedBy: createdBy,
-		CreatedAt: time.Now(),
-		ExpiresAt: time.Now().Add(7 * time.Hour * 24),
+		CreatedAt: createdAt,
+		ExpiresAt: createdAt.Add(7 * time.Hour * 24),
 	}
+
 	err := newToken.Insert(mysql.BoilCtx, p.db, boil.Infer())
 	if err != nil {
-		return "", errors.Wrap(errInsertNewToken, err.Error())
+		return "", errors.Wrap(err, errInsertNewToken.Error())
 	}
+
 	return randomString, nil
 }
 

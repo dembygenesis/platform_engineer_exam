@@ -2,12 +2,12 @@ package token
 
 import (
 	"context"
-	"fmt"
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"regexp"
 	"testing"
+	"time"
 )
 
 var (
@@ -45,24 +45,57 @@ func validatePassFetchToken(mock sqlmock.Sqlmock) {
 }*/
 
 func configureMockGenerateFailFetchToken(mock sqlmock.Sqlmock) {
-	sqlToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?);"
+	sqlToken := "SELECT (.+) FROM `token` WHERE .*"
 	mock.ExpectQuery(regexp.QuoteMeta(sqlToken)).WithArgs("123").WillReturnError(errFetchToken)
 }
 
-func TestPersistenceToken_GenerateFailCheckUniqueToken_ForTestsIgnore(t *testing.T) {
+func configureMockGeneratePassFetchToken(mock sqlmock.Sqlmock, randomString string) {
+	sqlToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?);"
+	rows := sqlmock.NewRows([]string{
+		"id",
+		"key",
+		"created_at",
+		"revoked",
+		"expired",
+		"created_by",
+		"expires_at",
+	})
+	mock.ExpectQuery(regexp.QuoteMeta(sqlToken)).WithArgs(randomString).WillReturnRows(rows)
+}
+
+func configureMockGeneratePassInsertToken(mock sqlmock.Sqlmock, randomString string, createdBy int, createdAt time.Time) {
+	var mockIdReturned int64 = 1
+	sqlInsert := "INSERT INTO `token` (`key`,`created_at`,`created_by`,`expires_at`) VALUES (?,?,?,?)"
+	mock.ExpectExec(regexp.QuoteMeta(sqlInsert)).WithArgs(
+		randomString,
+		createdAt,
+		3,
+		createdAt.Add(7*time.Hour*24),
+	).WillReturnResult(sqlmock.NewResult(mockIdReturned, 1))
+
+	sqlPostSelectAfterSQLBoilerInsert := "SELECT `id`,`revoked`,`expired` FROM `token` WHERE `id`=?"
+	rows := sqlmock.NewRows([]string{"id", "revoked", "expired"})
+	rows.AddRow(mockIdReturned, false, false)
+	mock.ExpectQuery(regexp.QuoteMeta(sqlPostSelectAfterSQLBoilerInsert)).WithArgs(
+		mockIdReturned,
+	).WillReturnRows(rows)
+}
+
+func TestPersistenceToken_GenerateFailCheckUniqueToken_HappyPath(t *testing.T) {
 	db, mock, err := sqlmock.New()
-	configureMockGenerateFailFetchToken(mock)
+	randomString := generateRandomCharacters(12)
+	createdAt := time.Now()
+	createdById := 3
+
+	configureMockGeneratePassFetchToken(mock, randomString)
+	configureMockGeneratePassInsertToken(mock, randomString, createdById, createdAt)
 
 	persistenceToken := PersistenceToken{db: db}
-	_, err = persistenceToken.Generate(context.Background(), 3)
-	if err != nil {
-		fmt.Println("=======", err)
-		require.Error(t, err, errCheckUniqueToken)
+	_, err = persistenceToken.Generate(context.Background(), createdById, randomString, &createdAt)
+	require.NoError(t, err)
 
-		errMsg := err.Error()
-		wantErrMsg := errCheckUniqueToken.Error()
-		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
-	}
+	err = mock.ExpectationsWereMet()
+	assert.NoError(t, err)
 }
 
 func TestPersistenceToken_GenerateErrCheckUniqueToken(t *testing.T) {
