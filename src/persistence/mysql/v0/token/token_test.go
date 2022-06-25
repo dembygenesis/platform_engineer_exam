@@ -60,7 +60,7 @@ func configureMockGeneratePassInsertToken(mock sqlmock.Sqlmock, randomString str
 	).WillReturnRows(rows)
 }
 
-func TestPersistenceToken_GenerateFailCheckUniqueToken_HappyPath(t *testing.T) {
+func TestPersistenceToken_Generate_HappyPath(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	randomString := generateRandomCharacters(12)
 	createdAt := time.Now()
@@ -71,10 +71,12 @@ func TestPersistenceToken_GenerateFailCheckUniqueToken_HappyPath(t *testing.T) {
 
 	persistenceToken := PersistenceToken{db: db}
 	_, err = persistenceToken.Generate(context.Background(), createdById, randomString, &createdAt)
-	require.NoError(t, err)
+	t.Run("Test Generate Happy Path", func(t *testing.T) {
+		require.NoError(t, err)
 
-	err = mock.ExpectationsWereMet()
-	assert.NoError(t, err)
+		err = mock.ExpectationsWereMet()
+		assert.NoError(t, err)
+	})
 }
 
 func TestPersistenceToken_Generate_FailCheckUniqueToken(t *testing.T) {
