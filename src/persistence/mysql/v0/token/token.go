@@ -26,24 +26,32 @@ const (
 )
 
 var (
-	errCheckUniqueToken       = errors.New("error checking for unique tokens")
-	errFetchToken             = errors.New("error fetching token")
-	errFetchTokenByKey        = errors.New("error fetching token by key")
-	errFetchTokens            = errors.New("error fetching tokens")
-	errTokenRevoked           = errors.New("error, token is revoked")
-	errInsertNewToken         = errors.New("error inserting new token")
-	errTokenNotFound          = errors.New("error, token not found")
-	errTokenExpired           = errors.New("error, token has already expired")
-	errTokenDeterminedExpired = errors.New("error, token has already expired")
-	errUpdateTokenToExpired   = errors.New("error updating token as expired")
+	errCheckUniqueToken        = errors.New("error checking for unique tokens")
+	errFetchToken              = errors.New("error fetching token")
+	errFetchTokenByKey         = errors.New("error fetching token by key")
+	errFetchTokenByKeyNoResult = errors.New("error, fetching token by key yields no results")
+	errFetchTokens             = errors.New("error fetching tokens")
+	errTokenRevoked            = errors.New("error, token is revoked")
+	errInsertNewToken          = errors.New("error inserting new token")
+	errTokenNotFound           = errors.New("error, token not found")
+	errTokenExpired            = errors.New("error, token has already expired")
+	errTokenDeterminedExpired  = errors.New("error, token has already expired")
+	errUpdateTokenToExpired    = errors.New("error updating token as expired")
 )
 
-func (p *PersistenceToken) updateTokenToExpired(ctx context.Context, id int) error {
-	return nil
-}
-
 func (p *PersistenceToken) UpdateTokenToExpired(ctx context.Context, token *models.Token) error {
-	return p.updateTokenToExpired(ctx, token.Id)
+	tokenEntry, err := models_schema.FindToken(ctx, p.db, token.Id)
+	if err != nil {
+		return errors.Wrap(err, errFetchToken.Error())
+	}
+
+	tokenEntry.Expired = true
+	_, err = tokenEntry.Update(ctx, p.db, boil.Infer())
+	if err != nil {
+		return errors.Wrap(err, errUpdateTokenToExpired.Error())
+	}
+
+	return nil
 }
 
 func (p *PersistenceToken) GetToken(ctx context.Context, key string) (*models.Token, error) {
@@ -55,7 +63,7 @@ func (p *PersistenceToken) GetToken(ctx context.Context, key string) (*models.To
 		return nil, errors.Wrap(err, errFetchTokenByKey.Error())
 	}
 	if len(container) == 0 || container == nil {
-		return nil, errors.Wrap(err, errFetchTokenByKey.Error())
+		return nil, errors.Wrap(err, errFetchTokenByKeyNoResult.Error())
 	}
 	return &container[0], nil
 }

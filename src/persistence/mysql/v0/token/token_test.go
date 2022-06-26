@@ -14,7 +14,7 @@ import (
 )
 
 func configureMockGenerateFailFetchToken(mock sqlmock.Sqlmock) {
-	sqlToken := "SELECT (.+) FROM `token` WHERE .*"
+	sqlToken := "select (.+) FROM `token` WHERE .*"
 	mock.ExpectQuery(regexp.QuoteMeta(sqlToken)).WithArgs("123").WillReturnError(errFetchToken)
 }
 
@@ -41,7 +41,6 @@ func configureMockGenerateFailInsertToken(mock sqlmock.Sqlmock, randomString str
 		3,
 		createdAt.Add(7*time.Hour*24),
 	).WillReturnResult(sqlmock.NewResult(mockIdReturned, 1)).WillReturnError(errInsertNewToken)
-
 }
 
 func configureMockGeneratePassInsertToken(mock sqlmock.Sqlmock, randomString string, createdBy int, createdAt time.Time) {
@@ -126,73 +125,14 @@ func configureMockValidatePassGetToken(mock sqlmock.Sqlmock, key string) {
 	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnRows(rows)
 }
 
-func TestPersistenceToken_Validate_HappyPath(t *testing.T) {
-	randomString := generateRandomCharacters(12)
-
-	db, mock, err := sqlmock.New()
-	require.NoError(t, err)
-
-	lapseLimit := models.SevenDaysLapse
-	lapseType := "7 Days"
-
-	configureMockValidatePassGetToken(mock, randomString)
-	persistenceToken := PersistenceToken{db: db}
-	t.Run("Test Validate Happy Path", func(t *testing.T) {
-		err = persistenceToken.Validate(context.Background(), randomString, lapseLimit, lapseType)
-		require.NoError(t, err)
-	})
-}
-
 func configureMockValidateFailErrTokenNotFound(mock sqlmock.Sqlmock, key string) {
 	sqlGetToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?) LIMIT 1;"
 	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnError(sql.ErrNoRows)
 }
 
-func TestPersistenceToken_Validate_FailErrTokenNotFound(t *testing.T) {
-	randomString := generateRandomCharacters(12)
-
-	db, mock, err := sqlmock.New()
-	require.NoError(t, err)
-
-	lapseLimit := models.SevenDaysLapse
-	lapseType := "7 Days"
-
-	configureMockValidateFailErrTokenNotFound(mock, randomString)
-	persistenceToken := PersistenceToken{db: db}
-	t.Run("Test Validate Fail Err Token Not Found", func(t *testing.T) {
-		err = persistenceToken.Validate(context.Background(), randomString, lapseLimit, lapseType)
-		require.Error(t, err)
-
-		errMsg := err.Error()
-		wantErrMsg := errTokenNotFound.Error()
-		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
-	})
-}
-
 func configureMockValidateFailErrFetchToken(mock sqlmock.Sqlmock, key string) {
 	sqlGetToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?) LIMIT 1;"
 	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnError(errFetchToken)
-}
-
-func TestPersistenceToken_Validate_FailErrFetchToken(t *testing.T) {
-	randomString := generateRandomCharacters(12)
-
-	db, mock, err := sqlmock.New()
-	require.NoError(t, err)
-
-	lapseLimit := models.SevenDaysLapse
-	lapseType := "7 Days"
-
-	configureMockValidateFailErrFetchToken(mock, randomString)
-	persistenceToken := PersistenceToken{db: db}
-	t.Run("Test Validate Fail Err Fetch Token", func(t *testing.T) {
-		err = persistenceToken.Validate(context.Background(), randomString, lapseLimit, lapseType)
-		require.Error(t, err)
-
-		errMsg := err.Error()
-		wantErrMsg := errFetchToken.Error()
-		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
-	})
 }
 
 func configureMockValidatePassGetTokenFailRevoked(mock sqlmock.Sqlmock, key string) {
@@ -207,48 +147,6 @@ func configureMockValidatePassGetTokenFailExpired(mock sqlmock.Sqlmock, key stri
 	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnRows(rows)
 }
 
-func TestPersistenceToken_Validate_FailErrTokenRevoked(t *testing.T) {
-	randomString := generateRandomCharacters(12)
-
-	db, mock, err := sqlmock.New()
-	require.NoError(t, err)
-
-	lapseLimit := models.SevenDaysLapse
-	lapseType := "7 Days"
-
-	configureMockValidatePassGetTokenFailRevoked(mock, randomString)
-	persistenceToken := PersistenceToken{db: db}
-	t.Run("Test Validate Fail Err Token Revoked", func(t *testing.T) {
-		err = persistenceToken.Validate(context.Background(), randomString, lapseLimit, lapseType)
-		require.Error(t, err)
-
-		errMsg := err.Error()
-		wantErrMsg := errTokenRevoked.Error()
-		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
-	})
-}
-
-func TestPersistenceToken_Validate_FailErrTokenExpired(t *testing.T) {
-	randomString := generateRandomCharacters(12)
-
-	db, mock, err := sqlmock.New()
-	require.NoError(t, err)
-
-	lapseLimit := models.SevenDaysLapse
-	lapseType := "7 Days"
-
-	configureMockValidatePassGetTokenFailExpired(mock, randomString)
-	persistenceToken := PersistenceToken{db: db}
-	t.Run("Test Validate Fail Err Token Expired", func(t *testing.T) {
-		err = persistenceToken.Validate(context.Background(), randomString, lapseLimit, lapseType)
-		require.Error(t, err)
-
-		errMsg := err.Error()
-		wantErrMsg := errTokenExpired.Error()
-		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
-	})
-}
-
 func configureMockValidatePassGetTokenFailDeterminedExpired(mock sqlmock.Sqlmock, key string) {
 	sqlGetToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?) LIMIT 1;"
 
@@ -259,27 +157,6 @@ func configureMockValidatePassGetTokenFailDeterminedExpired(mock sqlmock.Sqlmock
 	data := []driver.Value{key, false, false, createdAt, expiresAt}
 	rows := sqlmock.NewRows(headers).AddRow(data...)
 	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnRows(rows)
-}
-
-func TestPersistenceToken_Validate_FailErrDeterminedExpired(t *testing.T) {
-	randomString := generateRandomCharacters(12)
-
-	db, mock, err := sqlmock.New()
-	require.NoError(t, err)
-
-	lapseLimit := models.SevenDaysLapse
-	lapseType := "7 Days"
-
-	configureMockValidatePassGetTokenFailDeterminedExpired(mock, randomString)
-	persistenceToken := PersistenceToken{db: db}
-	t.Run("Test Validate Fail Err Token Determined Expired", func(t *testing.T) {
-		err = persistenceToken.Validate(context.Background(), randomString, lapseLimit, lapseType)
-		require.Error(t, err)
-
-		errMsg := err.Error()
-		wantErrMsg := errTokenDeterminedExpired.Error()
-		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
-	})
 }
 
 func configureMockGetAllFetchTokensSuccess(mock sqlmock.Sqlmock) {
@@ -355,5 +232,74 @@ func TestNewPersistenceToken(t *testing.T) {
 	persistenceToken := NewPersistenceToken(db)
 	t.Run("Test NewPersistenceToken", func(t *testing.T) {
 		require.NotNil(t, persistenceToken)
+	})
+}
+
+func configureMockUpdateTokenToExpiredFailFindToken(mock sqlmock.Sqlmock) {
+	mock.ExpectQuery("select (.+) FROM `token.*").WillReturnError(errFetchToken)
+}
+
+func TestPersistenceToken_UpdateTokenToExpired_FailFindToken(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	configureMockUpdateTokenToExpiredFailFindToken(mock)
+
+	persistenceToken := PersistenceToken{db: db}
+	err = persistenceToken.UpdateTokenToExpired(context.Background(), &models.Token{Key: "123456"})
+	t.Run("Test GetAll Fail Path", func(t *testing.T) {
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errFetchToken.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
+}
+
+func configureMockUpdateTokenToExpiredPassFindToken(mock sqlmock.Sqlmock) {
+	rows := sqlmock.NewRows([]string{"id"})
+	rows.AddRow(1)
+	mock.ExpectQuery("select (.+) .*").WillReturnRows(rows)
+}
+
+func configureMockUpdateTokenToExpiredFailUpdate(mock sqlmock.Sqlmock) {
+	mock.ExpectExec("UPDATE `token.*").WillReturnError(errUpdateTokenToExpired)
+}
+
+func TestPersistenceToken_UpdateTokenToExpired_FailUpdate(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	configureMockUpdateTokenToExpiredPassFindToken(mock)
+	configureMockUpdateTokenToExpiredFailUpdate(mock)
+
+	persistenceToken := PersistenceToken{db: db}
+	err = persistenceToken.UpdateTokenToExpired(context.Background(), &models.Token{Key: "123456"})
+	t.Run("Test GetAll Fail Update", func(t *testing.T) {
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errUpdateTokenToExpired.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
+}
+
+func configureMockUpdateTokenToExpiredPassUpdate(mock sqlmock.Sqlmock) {
+	rows := sqlmock.NewRows([]string{"A"})
+	rows.AddRow("1")
+	mock.ExpectExec("UPDATE `token.*").WillReturnResult(sqlmock.NewResult(1, 1))
+}
+
+func TestPersistenceToken_UpdateTokenToExpired_HappyPath(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	configureMockUpdateTokenToExpiredPassFindToken(mock)
+	configureMockUpdateTokenToExpiredPassUpdate(mock)
+
+	persistenceToken := PersistenceToken{db: db}
+	err = persistenceToken.UpdateTokenToExpired(context.Background(), &models.Token{Key: "123456"})
+	t.Run("Test UpdateTokenToExpired - Happy Path", func(t *testing.T) {
+		require.NoError(t, err)
 	})
 }
