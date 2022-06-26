@@ -19,10 +19,10 @@ func GetContainer(ctx *fiber.Ctx) (*dic.Container, error) {
 }
 
 // AddContainerInstance injects our dependencies to our fiber context
-func AddContainerInstance(container *dic.Container) func(c *fiber.Ctx) error {
-	return func(c *fiber.Ctx) error {
-		c.Locals(Dependencies, container)
-		return c.Next()
+func AddContainerInstance(container *dic.Container) func(ctx *fiber.Ctx) error {
+	return func(ctx *fiber.Ctx) error {
+		ctx.Locals(Dependencies, container)
+		return ctx.Next()
 	}
 }
 

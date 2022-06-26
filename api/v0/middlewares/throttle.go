@@ -7,12 +7,12 @@ import (
 	"time"
 )
 
-func Throttle() func(c *fiber.Ctx) error {
+func Throttle() func(ctx *fiber.Ctx) error {
 	return limiter.New(limiter.Config{
 		Max:        5,
 		Expiration: 5 * time.Second,
-		LimitReached: func(c *fiber.Ctx) error {
-			return c.Status(http.StatusForbidden).SendString("Please limit your requests to 5 per 5 seconds")
+		LimitReached: func(ctx *fiber.Ctx) error {
+			return ctx.Status(http.StatusForbidden).SendString("Please limit your requests to 5 per 5 seconds")
 		},
 	})
 }

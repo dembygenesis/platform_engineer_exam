@@ -26,7 +26,9 @@ type BusinessToken struct {
 }
 
 var (
-	errGetToken               = errors.New("error, get fails")
+	errGenerateToken          = errors.New("error generating token")
+	errGetToken               = errors.New("error, Get fails")
+	errGetTokens              = errors.New("error, get all fails")
 	errRevokeToken            = errors.New("error revoking token")
 	errTokenRevoked           = errors.New("error, token is revoked")
 	errTokenExpired           = errors.New("error, token has already expired")
@@ -35,11 +37,26 @@ var (
 )
 
 func (b *BusinessToken) GetAll(ctx context.Context) ([]models.Token, error) {
-	return b.dataLayer.GetAll(ctx)
+	tokens, err := b.dataLayer.GetAll(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, errGetTokens.Error())
+	}
+	return tokens, nil
 }
 
 func (b *BusinessToken) Generate(ctx context.Context, user *models_schema.User) (string, error) {
-	return b.dataLayer.Generate(ctx, user.ID, "", nil)
+	// Generate dummy string,
+
+	// Insert
+
+	// It either fails, or not.
+	/*tokenKey, err := b.dataLayer.Generate(ctx, user.ID, "", nil)
+	if err != nil {
+		return "", errors.Wrap(err, errGenerateToken.Error())
+	}
+	return tokenKey, nil*/
+
+	return "", nil
 }
 
 func (b *BusinessToken) Revoke(ctx context.Context, key string) error {

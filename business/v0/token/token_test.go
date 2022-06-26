@@ -11,6 +11,76 @@ import (
 	"time"
 )
 
+/*func TestBusinessToken_Generate_HappyPath(t *testing.T) {
+	fakeDataPersistence := tokenfakes.FakeDataPersistence{}
+	fakeDataPersistence.GetAllReturns([]models.Token{
+		{
+			Id: 1,
+		},
+	}, nil)
+
+	businessToken := NewBusinessToken(&fakeDataPersistence, 7)
+	_, err := businessToken.Generate(context.Background(), &models.s)
+	t.Run("Test Generate - Happy Path", func(t *testing.T) {
+		require.NoError(t, err)
+	})
+}
+
+func TestBusinessToken_Generate_FailPath(t *testing.T) {
+	fakeDataPersistence := tokenfakes.FakeDataPersistence{}
+	fakeDataPersistence.GetAllReturns([]models.Token{
+		{
+			Id: 1,
+		},
+	}, errGetTokens)
+
+	businessToken := NewBusinessToken(&fakeDataPersistence, 7)
+	_, err := businessToken.GetAll(context.Background())
+	t.Run("Test Get - Happy Path", func(t *testing.T) {
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errGetTokens.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
+}*/
+
+// Ethrin
+
+func TestBusinessToken_GetAll_HappyPath(t *testing.T) {
+	fakeDataPersistence := tokenfakes.FakeDataPersistence{}
+	fakeDataPersistence.GetAllReturns([]models.Token{
+		{
+			Id: 1,
+		},
+	}, nil)
+
+	businessToken := NewBusinessToken(&fakeDataPersistence, 7)
+	_, err := businessToken.GetAll(context.Background())
+	t.Run("Test Get - Happy Path", func(t *testing.T) {
+		require.NoError(t, err)
+	})
+}
+
+func TestBusinessToken_GetAll_FailPath(t *testing.T) {
+	fakeDataPersistence := tokenfakes.FakeDataPersistence{}
+	fakeDataPersistence.GetAllReturns([]models.Token{
+		{
+			Id: 1,
+		},
+	}, errGetTokens)
+
+	businessToken := NewBusinessToken(&fakeDataPersistence, 7)
+	_, err := businessToken.GetAll(context.Background())
+	t.Run("Test Get - Happy Path", func(t *testing.T) {
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errGetTokens.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
+}
+
 func TestBusinessToken_Revoke_Fail(t *testing.T) {
 	tokenKey := "123456"
 
