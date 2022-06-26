@@ -89,7 +89,7 @@ func TestBusinessToken_Validate_FailPath_Revoked(t *testing.T) {
 		Revoked:   true,
 		Expired:   false,
 		CreatedBy: "Demby",
-	}, errTokenRevoked)
+	}, nil)
 
 	businessToken := NewBusinessToken(&fakeDataPersistence, 7)
 	err := businessToken.Validate(context.Background(), tokenKey)
