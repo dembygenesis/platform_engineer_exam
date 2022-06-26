@@ -29,13 +29,34 @@ const (
 var (
 	errCheckUniqueToken       = errors.New("error checking for unique tokens")
 	errFetchToken             = errors.New("error fetching token")
+	errFetchTokenByKey        = errors.New("error fetching token by key")
 	errFetchTokens            = errors.New("error fetching tokens")
 	errTokenRevoked           = errors.New("error, token is revoked")
 	errInsertNewToken         = errors.New("error inserting new token")
 	errTokenNotFound          = errors.New("error, token not found")
 	errTokenExpired           = errors.New("error, token has already expired")
 	errTokenDeterminedExpired = errors.New("error, token has already expired")
+	errUpdateTokenToExpired   = errors.New("error updating token as expired")
 )
+
+func (p *PersistenceToken) updateTokenToExpired(ctx context.Context, id int) error {
+	return nil
+}
+
+func (p *PersistenceToken) UpdateTokenToExpired(ctx context.Context, token *models.Token) error {
+	return p.updateTokenToExpired(ctx, token.Id)
+}
+
+func (p *PersistenceToken) GetToken(ctx context.Context, key string) (*models.Token, error) {
+	return nil, nil
+	/*token, err := models_schema.Tokens(
+		models_schema.TokenWhere.Key.EQ(key),
+	).One(ctx, p.db)
+	if err != nil {
+		return nil, errors.Wrap(err, errFetchTokenByKey.Error())
+	}
+	return &token, nil*/
+}
 
 // GetAll returns all the tokens
 func (p *PersistenceToken) GetAll(ctx context.Context) ([]models.Token, error) {

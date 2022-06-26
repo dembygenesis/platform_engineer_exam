@@ -24,22 +24,32 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 					var eo *token1.BusinessToken
 					return eo, err
 				}
-				pi0, err := ctn.SafeGet("mysql_token_persistence")
+				pi0, err := ctn.SafeGet("config")
 				if err != nil {
 					var eo *token1.BusinessToken
 					return eo, err
 				}
-				p0, ok := pi0.(*token.PersistenceToken)
+				p0, ok := pi0.(*config.Config)
 				if !ok {
 					var eo *token1.BusinessToken
-					return eo, errors.New("could not cast parameter 0 to *token.PersistenceToken")
+					return eo, errors.New("could not cast parameter 0 to *config.Config")
 				}
-				b, ok := d.Build.(func(*token.PersistenceToken) (*token1.BusinessToken, error))
+				pi1, err := ctn.SafeGet("mysql_token_persistence")
+				if err != nil {
+					var eo *token1.BusinessToken
+					return eo, err
+				}
+				p1, ok := pi1.(*token.PersistenceToken)
 				if !ok {
 					var eo *token1.BusinessToken
-					return eo, errors.New("could not cast build function to func(*token.PersistenceToken) (*token1.BusinessToken, error)")
+					return eo, errors.New("could not cast parameter 1 to *token.PersistenceToken")
 				}
-				return b(p0)
+				b, ok := d.Build.(func(*config.Config, *token.PersistenceToken) (*token1.BusinessToken, error))
+				if !ok {
+					var eo *token1.BusinessToken
+					return eo, errors.New("could not cast build function to func(*config.Config, *token.PersistenceToken) (*token1.BusinessToken, error)")
+				}
+				return b(p0, p1)
 			},
 			Unshared: false,
 		},

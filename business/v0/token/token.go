@@ -2,23 +2,39 @@ package token
 
 import (
 	"context"
+	"fmt"
 	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/models_schema"
+	"github.com/dembygenesis/platform_engineer_exam/src/utils/common"
+	"github.com/friendsofgo/errors"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . dataPersistence
 type dataPersistence interface {
 	GetAll(ctx context.Context) ([]models.Token, error)
 
 	// Generate creates a new 6-12 digit authentication on token
 	Generate(ctx context.Context, createdBy int, randomStringsOverride string, createdAtOverride *time.Time) (string, error)
 
+	GetToken(ctx context.Context, key string) (*models.Token, error)
+
+	UpdateTokenToExpired(ctx context.Context, token *models.Token) error
+
 	// Validate checks if a string is registered
-	Validate(ctx context.Context, str string, lapseLimit float64, lapseType string) error
+	Validate(ctx context.Context, key string, lapseLimit float64, lapseType string) error
 }
 type BusinessToken struct {
-	dataLayer dataPersistence
+	dataLayer      dataPersistence
+	tokenDaysValid int
 }
+
+var (
+	errTokenRevoked           = errors.New("error, token is revoked")
+	errTokenExpired           = errors.New("error, token has already expired")
+	errTokenDeterminedExpired = errors.New("error, token has already expired")
+)
 
 func (b *BusinessToken) GetAll(ctx context.Context) ([]models.Token, error) {
 	return b.dataLayer.GetAll(ctx)
@@ -28,12 +44,43 @@ func (b *BusinessToken) Generate(ctx context.Context, user *models_schema.User) 
 	return b.dataLayer.Generate(ctx, user.ID, "", nil)
 }
 
-func (b *BusinessToken) Validate(ctx context.Context, str string, lapseLimit float64, lapseType string) error {
-	return b.dataLayer.Validate(ctx, str, lapseLimit, lapseType)
+func (b *BusinessToken) Validate(ctx context.Context, key string, lapseLimit float64, lapseType string) error {
+	logger := common.GetLogger(ctx)
+	token, err := b.dataLayer.GetToken(ctx, key)
+	if err != nil {
+		return nil
+	}
+
+	if token.Revoked {
+		return errTokenRevoked
+	}
+	if token.Expired {
+		logger.WithFields(logrus.Fields{
+			"msg": fmt.Sprintf("Token: '%v', has already expired.", token.Key),
+		}).Error("error_validate")
+		return errTokenExpired
+	}
+	daysElapsed := token.ExpiresAt.Sub(token.CreatedAt).Hours() / 7
+	if daysElapsed > lapseLimit {
+		defer func() {
+			err = b.dataLayer.UpdateTokenToExpired(ctx, token)
+			if err != nil {
+				logger.WithFields(logrus.Fields{
+					"err": err,
+				}).Error("error_validate")
+			}
+		}()
+		logger.WithFields(logrus.Fields{
+			"msg": fmt.Sprintf("Lapsed token detected, with lapse type: '%v'.", lapseType),
+		}).Error("error_validate")
+	}
+
+	return nil
 }
 
-func NewBusinessToken(mysqlDataPersistence dataPersistence) *BusinessToken {
+func NewBusinessToken(mysqlDataPersistence dataPersistence, tokenDaysValid int) *BusinessToken {
 	return &BusinessToken{
-		dataLayer: mysqlDataPersistence,
+		dataLayer:      mysqlDataPersistence,
+		tokenDaysValid: tokenDaysValid,
 	}
 }

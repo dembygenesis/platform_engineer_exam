@@ -23,12 +23,12 @@ func ValidateToken(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
 
-	cfg, err := ctn.SafeGetConfig()
+	/*cfg, err := ctn.SafeGetConfig()
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
-	}
+	}*/
 
-	err = biz.Validate(c.Context(), token, cfg.App.TokenLapseDuration, cfg.App.TokenLapseSettings)
+	err = biz.Validate(c.Context(), token, 1, "your computer")
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}

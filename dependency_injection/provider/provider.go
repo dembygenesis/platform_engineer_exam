@@ -60,8 +60,8 @@ func getServices() (*[]dingo.Def, error) {
 		},
 		{
 			Name: businessToken,
-			Build: func(persistenceToken *token2.PersistenceToken) (*BusinessToken.BusinessToken, error) {
-				return BusinessToken.NewBusinessToken(persistenceToken), nil
+			Build: func(config *config.Config, persistenceToken *token2.PersistenceToken) (*BusinessToken.BusinessToken, error) {
+				return BusinessToken.NewBusinessToken(persistenceToken, config.App.TokenDaysValid), nil
 			},
 		},
 	}

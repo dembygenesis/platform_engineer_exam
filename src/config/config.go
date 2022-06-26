@@ -1,8 +1,6 @@
 package config
 
 import (
-	"fmt"
-	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/dembygenesis/platform_engineer_exam/src/utils/validation"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -10,9 +8,9 @@ import (
 )
 
 var (
-	errValidatingStructParams         = errors.New("error validating struct params")
-	errReturnedFromParamValidation    = errors.New("errors returned from param validation")
-	errUnidentifiedTokenLapseDuration = errors.New("error - unidentified token lapse duration")
+	errValidatingStructParams      = errors.New("error validating struct params")
+	errReturnedFromParamValidation = errors.New("errors returned from param validation")
+	errTokenDaysValidLessThanOne   = errors.New("error, token days valid is less than one")
 )
 
 // DatabaseCredentials holds our database env settings
@@ -25,8 +23,7 @@ type DatabaseCredentials struct {
 }
 
 type App struct {
-	TokenLapseSettings string `mapstructure:"TOKEN_LAPSE_DURATION" validate:"required"`
-	TokenLapseDuration float64
+	TokenDaysValid int `mapstructure:"TOKEN_DAYS_VALID" validate:"required"`
 }
 
 type API struct {
@@ -62,6 +59,9 @@ func NewConfig(configFile string) (*Config, error) {
 	if err != nil {
 		return config, errors.Wrap(err, "error unmarshalling the app")
 	}
+	if config.App.TokenDaysValid < 1 {
+		return config, errTokenDaysValidLessThanOne
+	}
 
 	configStructs := []interface{}{
 		config.DatabaseCredentials,
@@ -77,17 +77,6 @@ func NewConfig(configFile string) (*Config, error) {
 			return nil, errors.Wrap(errors.New(strings.Join(errs[:], ",")),
 				errReturnedFromParamValidation.Error())
 		}
-	}
-
-	switch config.App.TokenLapseSettings {
-	case "7 Days":
-		fmt.Println("Yo 7 days")
-		config.App.TokenLapseDuration = models.SevenDaysLapse
-	case "30 Seconds":
-		fmt.Println("Yo 30 Seconds")
-		config.App.TokenLapseDuration = models.ThirtySecondsLapse
-	default:
-		return nil, errUnidentifiedTokenLapseDuration
 	}
 
 	return config, nil

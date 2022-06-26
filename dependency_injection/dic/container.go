@@ -227,7 +227,8 @@ func (c *Container) IsClosed() bool {
 // 	scope: "main"
 // 	build: func
 // 	params:
-// 		- "0": Service(*token.PersistenceToken) ["mysql_token_persistence"]
+// 		- "0": Service(*config.Config) ["config"]
+// 		- "1": Service(*token.PersistenceToken) ["mysql_token_persistence"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
@@ -254,7 +255,8 @@ func (c *Container) SafeGetBusinessToken() (*token1.BusinessToken, error) {
 // 	scope: "main"
 // 	build: func
 // 	params:
-// 		- "0": Service(*token.PersistenceToken) ["mysql_token_persistence"]
+// 		- "0": Service(*config.Config) ["config"]
+// 		- "1": Service(*token.PersistenceToken) ["mysql_token_persistence"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
@@ -276,7 +278,8 @@ func (c *Container) GetBusinessToken() *token1.BusinessToken {
 // 	scope: "main"
 // 	build: func
 // 	params:
-// 		- "0": Service(*token.PersistenceToken) ["mysql_token_persistence"]
+// 		- "0": Service(*config.Config) ["config"]
+// 		- "1": Service(*token.PersistenceToken) ["mysql_token_persistence"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
@@ -304,7 +307,8 @@ func (c *Container) UnscopedSafeGetBusinessToken() (*token1.BusinessToken, error
 // 	scope: "main"
 // 	build: func
 // 	params:
-// 		- "0": Service(*token.PersistenceToken) ["mysql_token_persistence"]
+// 		- "0": Service(*config.Config) ["config"]
+// 		- "1": Service(*token.PersistenceToken) ["mysql_token_persistence"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
@@ -327,7 +331,8 @@ func (c *Container) UnscopedGetBusinessToken() *token1.BusinessToken {
 // 	scope: "main"
 // 	build: func
 // 	params:
-// 		- "0": Service(*token.PersistenceToken) ["mysql_token_persistence"]
+// 		- "0": Service(*config.Config) ["config"]
+// 		- "1": Service(*token.PersistenceToken) ["mysql_token_persistence"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
