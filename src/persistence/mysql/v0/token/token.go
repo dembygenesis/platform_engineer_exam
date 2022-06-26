@@ -20,11 +20,6 @@ type PersistenceToken struct {
 	db *sql.DB
 }
 
-func (p *PersistenceToken) RevokeToken(ctx context.Context, key string) error {
-	//TODO implement me
-	panic("implement me")
-}
-
 const (
 	min = 6
 	max = 12
@@ -42,7 +37,26 @@ var (
 	errTokenExpired            = errors.New("error, token has already expired")
 	errTokenDeterminedExpired  = errors.New("error, token has already expired")
 	errUpdateTokenToExpired    = errors.New("error updating token as expired")
+	errUpdateTokenToRevoked    = errors.New("error updating token as revoked")
 )
+
+func (p *PersistenceToken) RevokeToken(ctx context.Context, key string) error {
+	token, err := models_schema.Tokens(
+		models_schema.TokenWhere.Key.EQ(key),
+	).One(ctx, p.db)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return errors.Wrap(err, errTokenNotFound.Error())
+		}
+		return errors.Wrap(err, errFetchToken.Error())
+	}
+	token.Revoked = true
+	_, err = token.Update(ctx, p.db, boil.Infer())
+	if err != nil {
+		return errors.Wrap(err, errUpdateTokenToRevoked.Error())
+	}
+	return nil
+}
 
 func (p *PersistenceToken) UpdateTokenToExpired(ctx context.Context, token *models.Token) error {
 	tokenEntry, err := models_schema.FindToken(ctx, p.db, token.Id)

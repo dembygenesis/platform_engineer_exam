@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
+	"fmt"
 	sqlmock "github.com/DATA-DOG/go-sqlmock"
 	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/stretchr/testify/assert"
@@ -14,8 +15,8 @@ import (
 )
 
 func configureMockGenerateFailFetchToken(mock sqlmock.Sqlmock) {
-	sqlToken := "select (.+) FROM `token` WHERE .*"
-	mock.ExpectQuery(regexp.QuoteMeta(sqlToken)).WithArgs("123").WillReturnError(errFetchToken)
+	sqlToken := "SELECT `token`.*"
+	mock.ExpectQuery(regexp.QuoteMeta(sqlToken)).WillReturnError(errFetchToken)
 }
 
 func configureMockGeneratePassFetchToken(mock sqlmock.Sqlmock, randomString string) {
@@ -197,7 +198,7 @@ func TestPersistenceToken_GetAll_HappyPath(t *testing.T) {
 		require.NoError(t, err)
 
 		resLength := len(res)
-		require.Equal(t, resLength > 0, resLength)
+		require.Equal(t, true, resLength > 0)
 	})
 }
 
@@ -301,5 +302,77 @@ func TestPersistenceToken_UpdateTokenToExpired_HappyPath(t *testing.T) {
 	err = persistenceToken.UpdateTokenToExpired(context.Background(), &models.Token{Key: "123456"})
 	t.Run("Test UpdateTokenToExpired - Happy Path", func(t *testing.T) {
 		require.NoError(t, err)
+	})
+}
+
+func TestPersistenceToken_RevokeToken_HappyPath(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	rows := sqlmock.NewRows([]string{"id"})
+	rows.AddRow("3")
+	mock.ExpectQuery("SELECT `token.*").WillReturnRows(rows)
+	mock.ExpectExec("UPDATE `token` .*").WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectQuery("select * from `token`").WillReturnRows(rows)
+
+	persistenceToken := PersistenceToken{db: db}
+	err = persistenceToken.RevokeToken(context.Background(), "123456")
+	t.Run("Test RevokeToken - Happy Path", func(t *testing.T) {
+		require.NoError(t, err)
+	})
+}
+
+func TestPersistenceToken_RevokeToken_Fail_FindToken(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	mock.ExpectQuery("select (.*) from `token.*").WillReturnError(errFetchToken)
+
+	persistenceToken := PersistenceToken{db: db}
+	err = persistenceToken.RevokeToken(context.Background(), "123456")
+	t.Run("Test RevokeToken - Happy Path", func(t *testing.T) {
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errFetchToken.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
+}
+
+func TestPersistenceToken_RevokeToken_Fail_FindTokenNoResults(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	mock.ExpectQuery("SELECT `token.*").WillReturnError(sql.ErrNoRows)
+
+	persistenceToken := PersistenceToken{db: db}
+	err = persistenceToken.RevokeToken(context.Background(), "123456")
+	fmt.Println("err", err)
+	t.Run("Test RevokeToken - Fail Find Token No Results", func(t *testing.T) {
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errTokenNotFound.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
+}
+
+func TestPersistenceToken_RevokeToken_Fail_Update(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	rows := sqlmock.NewRows([]string{"id"})
+	rows.AddRow(0)
+	mock.ExpectQuery("SELECT `token.*").WillReturnRows(rows)
+	mock.ExpectExec("UPDATE `token` .*").WillReturnError(errUpdateTokenToExpired)
+
+	persistenceToken := PersistenceToken{db: db}
+	err = persistenceToken.RevokeToken(context.Background(), "123456")
+	t.Run("Test RevokeToken - Happy Path", func(t *testing.T) {
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errUpdateTokenToExpired.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
 	})
 }

@@ -32,7 +32,6 @@ func TestBusinessToken_Revoke_HappyPath(t *testing.T) {
 	tokenKey := "123456"
 
 	fakeDataPersistence := tokenfakes.FakeDataPersistence{}
-	fakeDataPersistence.RevokeToken(context.Background(), "abc")
 	fakeDataPersistence.RevokeTokenReturns(nil)
 
 	businessToken := NewBusinessToken(&fakeDataPersistence, 7)
