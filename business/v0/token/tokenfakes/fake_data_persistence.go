@@ -65,18 +65,6 @@ type FakeDataPersistence struct {
 	updateTokenToExpiredReturnsOnCall map[int]struct {
 		result1 error
 	}
-	ValidateStub        func(context.Context, string) error
-	validateMutex       sync.RWMutex
-	validateArgsForCall []struct {
-		arg1 context.Context
-		arg2 string
-	}
-	validateReturns struct {
-		result1 error
-	}
-	validateReturnsOnCall map[int]struct {
-		result1 error
-	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -339,68 +327,6 @@ func (fake *FakeDataPersistence) UpdateTokenToExpiredReturnsOnCall(i int, result
 	}{result1}
 }
 
-func (fake *FakeDataPersistence) Validate(arg1 context.Context, arg2 string) error {
-	fake.validateMutex.Lock()
-	ret, specificReturn := fake.validateReturnsOnCall[len(fake.validateArgsForCall)]
-	fake.validateArgsForCall = append(fake.validateArgsForCall, struct {
-		arg1 context.Context
-		arg2 string
-	}{arg1, arg2})
-	stub := fake.ValidateStub
-	fakeReturns := fake.validateReturns
-	fake.recordInvocation("Validate", []interface{}{arg1, arg2})
-	fake.validateMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeDataPersistence) ValidateCallCount() int {
-	fake.validateMutex.RLock()
-	defer fake.validateMutex.RUnlock()
-	return len(fake.validateArgsForCall)
-}
-
-func (fake *FakeDataPersistence) ValidateCalls(stub func(context.Context, string) error) {
-	fake.validateMutex.Lock()
-	defer fake.validateMutex.Unlock()
-	fake.ValidateStub = stub
-}
-
-func (fake *FakeDataPersistence) ValidateArgsForCall(i int) (context.Context, string) {
-	fake.validateMutex.RLock()
-	defer fake.validateMutex.RUnlock()
-	argsForCall := fake.validateArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeDataPersistence) ValidateReturns(result1 error) {
-	fake.validateMutex.Lock()
-	defer fake.validateMutex.Unlock()
-	fake.ValidateStub = nil
-	fake.validateReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeDataPersistence) ValidateReturnsOnCall(i int, result1 error) {
-	fake.validateMutex.Lock()
-	defer fake.validateMutex.Unlock()
-	fake.ValidateStub = nil
-	if fake.validateReturnsOnCall == nil {
-		fake.validateReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.validateReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *FakeDataPersistence) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -412,8 +338,6 @@ func (fake *FakeDataPersistence) Invocations() map[string][][]interface{} {
 	defer fake.getTokenMutex.RUnlock()
 	fake.updateTokenToExpiredMutex.RLock()
 	defer fake.updateTokenToExpiredMutex.RUnlock()
-	fake.validateMutex.RLock()
-	defer fake.validateMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

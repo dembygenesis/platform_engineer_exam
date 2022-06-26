@@ -17,7 +17,9 @@ type dataPersistence interface {
 	Generate(ctx context.Context, createdBy int, randomStringsOverride string, createdAtOverride *time.Time) (string, error)
 	GetToken(ctx context.Context, key string) (*models.Token, error)
 	UpdateTokenToExpired(ctx context.Context, token *models.Token) error
-	Validate(ctx context.Context, key string) error
+
+	// Delete this
+	// Validate(ctx context.Context, key string) error
 }
 type BusinessToken struct {
 	dataLayer      dataPersistence

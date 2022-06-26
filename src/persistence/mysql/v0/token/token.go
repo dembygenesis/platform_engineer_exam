@@ -3,7 +3,6 @@ package token
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/models_schema"
@@ -48,14 +47,17 @@ func (p *PersistenceToken) UpdateTokenToExpired(ctx context.Context, token *mode
 }
 
 func (p *PersistenceToken) GetToken(ctx context.Context, key string) (*models.Token, error) {
-	return nil, nil
-	/*token, err := models_schema.Tokens(
+	var container []models.Token
+	err := models_schema.Tokens(
 		models_schema.TokenWhere.Key.EQ(key),
-	).One(ctx, p.db)
+	).Bind(ctx, p.db, &container)
 	if err != nil {
 		return nil, errors.Wrap(err, errFetchTokenByKey.Error())
 	}
-	return &token, nil*/
+	if len(container) == 0 || container == nil {
+		return nil, errors.Wrap(err, errFetchTokenByKey.Error())
+	}
+	return &container[0], nil
 }
 
 // GetAll returns all the tokens
@@ -129,47 +131,6 @@ func (p *PersistenceToken) Generate(ctx context.Context, createdBy int, randomSt
 	}
 
 	return randomString, nil
-}
-
-// Validate checks if the token has hit it's 7 day expiry, and if it has - updates the flag "expired" to be true
-func (p *PersistenceToken) Validate(ctx context.Context, str string, lapseLimit float64, lapseType string) error {
-	logger := common.GetLogger(ctx)
-	token, err := models_schema.Tokens(
-		models_schema.TokenWhere.Key.EQ(str),
-	).One(mysql.BoilCtx, p.db)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return errTokenNotFound
-		} else {
-			return errors.Wrap(err, errFetchToken.Error())
-		}
-	}
-	if token.Revoked {
-		return errTokenRevoked
-	}
-	if token.Expired {
-		logger.WithFields(logrus.Fields{
-			"msg": fmt.Sprintf("Token: '%v', has already expired.", token.Key),
-		}).Error("error_validate")
-		return errTokenExpired
-	}
-	daysElapsed := token.ExpiresAt.Sub(token.CreatedAt).Hours() / 7
-	if daysElapsed > lapseLimit {
-		defer func() {
-			token.Expired = true
-			_, err = token.Update(mysql.BoilCtx, p.db, boil.Infer())
-			if err != nil {
-				logger.WithFields(logrus.Fields{
-					"err": err,
-				}).Error("error_validate")
-			}
-		}()
-		logger.WithFields(logrus.Fields{
-			"msg": fmt.Sprintf("Lapsed token detected, with lapse type: '%v'.", lapseType),
-		}).Error("error_validate")
-		return errTokenDeterminedExpired
-	}
-	return nil
 }
 
 // NewPersistenceToken returns a new *PersistenceToken instance

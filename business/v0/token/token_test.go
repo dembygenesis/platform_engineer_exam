@@ -50,7 +50,6 @@ func TestBusinessToken_Validate_FailPath_UpdateTokenToExpired(t *testing.T) {
 	err := businessToken.Validate(context.Background(), tokenKey)
 	t.Run("Test Validate - Update Token To Expired", func(t *testing.T) {
 		defer func() {
-			fmt.Println("=============err=============", err)
 			require.Error(t, err)
 		}()
 	})

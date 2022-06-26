@@ -3,8 +3,8 @@ package provider
 import (
 	BusinessToken "github.com/dembygenesis/platform_engineer_exam/business/v0/token"
 	"github.com/dembygenesis/platform_engineer_exam/src/config"
-	v0 "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql"
-	token2 "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/token"
+	PersistenceMYSQL "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql"
+	PersistenceToken "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/token"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/user"
 	"github.com/pkg/errors"
 	"github.com/sarulabs/dingo/v4"
@@ -38,8 +38,8 @@ func getServices() (*[]dingo.Def, error) {
 		},
 		{
 			Name: mysqlConnection,
-			Build: func(config *config.Config) (*v0.MYSQLConnection, error) {
-				mysql, err := v0.NewMYSQLConnection(config.DatabaseCredentials)
+			Build: func(config *config.Config) (*PersistenceMYSQL.MYSQLConnection, error) {
+				mysql, err := PersistenceMYSQL.NewMYSQLConnection(config.DatabaseCredentials)
 				if err != nil {
 					log.Fatalf("error establishing connection to MYSQL: :%v", err.Error())
 				}
@@ -48,19 +48,19 @@ func getServices() (*[]dingo.Def, error) {
 		},
 		{
 			Name: mysqlTokenPersistenceLayer,
-			Build: func(connection *v0.MYSQLConnection) (*token2.PersistenceToken, error) {
-				return token2.NewPersistenceToken(connection.DB), nil
+			Build: func(connection *PersistenceMYSQL.MYSQLConnection) (*PersistenceToken.PersistenceToken, error) {
+				return PersistenceToken.NewPersistenceToken(connection.DB), nil
 			},
 		},
 		{
 			Name: mysqlUserPersistenceLayer,
-			Build: func(connection *v0.MYSQLConnection) (*user.PersistenceUser, error) {
+			Build: func(connection *PersistenceMYSQL.MYSQLConnection) (*user.PersistenceUser, error) {
 				return user.NewPersistenceUser(connection.DB), nil
 			},
 		},
 		{
 			Name: businessToken,
-			Build: func(config *config.Config, persistenceToken *token2.PersistenceToken) (*BusinessToken.BusinessToken, error) {
+			Build: func(config *config.Config, persistenceToken *PersistenceToken.PersistenceToken) (*BusinessToken.BusinessToken, error) {
 				return BusinessToken.NewBusinessToken(persistenceToken, config.App.TokenDaysValid), nil
 			},
 		},
