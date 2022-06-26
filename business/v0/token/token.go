@@ -31,9 +31,11 @@ type BusinessToken struct {
 }
 
 var (
+	errGetToken               = errors.New("error, get fails")
 	errTokenRevoked           = errors.New("error, token is revoked")
 	errTokenExpired           = errors.New("error, token has already expired")
 	errTokenDeterminedExpired = errors.New("error, token has already expired")
+	errUpdateTokenToExpired   = errors.New("error, updating token to expired failed")
 )
 
 func (b *BusinessToken) GetAll(ctx context.Context) ([]models.Token, error) {
@@ -48,7 +50,7 @@ func (b *BusinessToken) Validate(ctx context.Context, key string, lapseLimit flo
 	logger := common.GetLogger(ctx)
 	token, err := b.dataLayer.GetToken(ctx, key)
 	if err != nil {
-		return nil
+		return errors.Wrap(err, errGetToken.Error())
 	}
 
 	if token.Revoked {
@@ -61,7 +63,7 @@ func (b *BusinessToken) Validate(ctx context.Context, key string, lapseLimit flo
 		return errTokenExpired
 	}
 	daysElapsed := token.ExpiresAt.Sub(token.CreatedAt).Hours() / 7
-	if daysElapsed > lapseLimit {
+	if daysElapsed > float64(b.tokenDaysValid) {
 		defer func() {
 			err = b.dataLayer.UpdateTokenToExpired(ctx, token)
 			if err != nil {
@@ -73,6 +75,7 @@ func (b *BusinessToken) Validate(ctx context.Context, key string, lapseLimit flo
 		logger.WithFields(logrus.Fields{
 			"msg": fmt.Sprintf("Lapsed token detected, with lapse type: '%v'.", lapseType),
 		}).Error("error_validate")
+		return errTokenDeterminedExpired
 	}
 
 	return nil
