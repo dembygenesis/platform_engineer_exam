@@ -26,7 +26,7 @@ func TestBusinessToken_Validate_HappyPath(t *testing.T) {
 	}, nil)
 
 	businessToken := NewBusinessToken(&fakeDataPersistence, 7)
-	err := businessToken.Validate(context.Background(), tokenKey, 0, "")
+	err := businessToken.Validate(context.Background(), tokenKey)
 	t.Run("Test Validate - Happy Path", func(t *testing.T) {
 		require.NoError(t, err)
 	})
@@ -47,7 +47,7 @@ func TestBusinessToken_Validate_FailPath_UpdateTokenToExpired(t *testing.T) {
 	}, errUpdateTokenToExpired)
 
 	businessToken := NewBusinessToken(&fakeDataPersistence, 7)
-	err := businessToken.Validate(context.Background(), tokenKey, 0, "")
+	err := businessToken.Validate(context.Background(), tokenKey)
 	t.Run("Test Validate - Update Token To Expired", func(t *testing.T) {
 		defer func() {
 			fmt.Println("=============err=============", err)
@@ -68,16 +68,12 @@ func TestBusinessToken_Validate_FailPath_GetToken(t *testing.T) {
 		Revoked:   false,
 		Expired:   false,
 		CreatedBy: "Demby",
-	}, errGetToken)
+	}, nil)
 
 	businessToken := NewBusinessToken(&fakeDataPersistence, 7)
-	err := businessToken.Validate(context.Background(), tokenKey, 0, "")
+	err := businessToken.Validate(context.Background(), tokenKey)
 	t.Run("Test Validate - Happy Path", func(t *testing.T) {
 		require.NoError(t, err)
-
-		errMsg := err.Error()
-		wantErrMsg := errGetToken.Error()
-		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
 	})
 }
 
@@ -93,12 +89,12 @@ func TestBusinessToken_Validate_FailPath_Revoked(t *testing.T) {
 		Revoked:   true,
 		Expired:   false,
 		CreatedBy: "Demby",
-	}, nil)
+	}, errTokenRevoked)
 
 	businessToken := NewBusinessToken(&fakeDataPersistence, 7)
-	err := businessToken.Validate(context.Background(), tokenKey, 0, "")
+	err := businessToken.Validate(context.Background(), tokenKey)
 	t.Run("Test Validate - Fail Path Revoked", func(t *testing.T) {
-		require.NoError(t, err)
+		require.Error(t, err)
 
 		errMsg := err.Error()
 		wantErrMsg := errTokenRevoked.Error()
@@ -121,7 +117,7 @@ func TestBusinessToken_Validate_FailPath_Expired(t *testing.T) {
 	}, nil)
 
 	businessToken := NewBusinessToken(&fakeDataPersistence, 7)
-	err := businessToken.Validate(context.Background(), tokenKey, 0, "")
+	err := businessToken.Validate(context.Background(), tokenKey)
 	t.Run("Test Validate - Fail Path Expired", func(t *testing.T) {
 		require.Error(t, err)
 
@@ -146,7 +142,7 @@ func TestBusinessToken_Validate_FailPath_DeterminedExpired(t *testing.T) {
 	}, nil)
 
 	businessToken := NewBusinessToken(&fakeDataPersistence, 7)
-	err := businessToken.Validate(context.Background(), tokenKey, 0, "")
+	err := businessToken.Validate(context.Background(), tokenKey)
 	fmt.Println("err err err", err)
 	t.Run("Test Validate - Fail Path Determined Expired", func(t *testing.T) {
 		require.Error(t, err)

@@ -65,13 +65,11 @@ type FakeDataPersistence struct {
 	updateTokenToExpiredReturnsOnCall map[int]struct {
 		result1 error
 	}
-	ValidateStub        func(context.Context, string, float64, string) error
+	ValidateStub        func(context.Context, string) error
 	validateMutex       sync.RWMutex
 	validateArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
-		arg3 float64
-		arg4 string
 	}
 	validateReturns struct {
 		result1 error
@@ -341,21 +339,19 @@ func (fake *FakeDataPersistence) UpdateTokenToExpiredReturnsOnCall(i int, result
 	}{result1}
 }
 
-func (fake *FakeDataPersistence) Validate(arg1 context.Context, arg2 string, arg3 float64, arg4 string) error {
+func (fake *FakeDataPersistence) Validate(arg1 context.Context, arg2 string) error {
 	fake.validateMutex.Lock()
 	ret, specificReturn := fake.validateReturnsOnCall[len(fake.validateArgsForCall)]
 	fake.validateArgsForCall = append(fake.validateArgsForCall, struct {
 		arg1 context.Context
 		arg2 string
-		arg3 float64
-		arg4 string
-	}{arg1, arg2, arg3, arg4})
+	}{arg1, arg2})
 	stub := fake.ValidateStub
 	fakeReturns := fake.validateReturns
-	fake.recordInvocation("Validate", []interface{}{arg1, arg2, arg3, arg4})
+	fake.recordInvocation("Validate", []interface{}{arg1, arg2})
 	fake.validateMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3, arg4)
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
@@ -369,17 +365,17 @@ func (fake *FakeDataPersistence) ValidateCallCount() int {
 	return len(fake.validateArgsForCall)
 }
 
-func (fake *FakeDataPersistence) ValidateCalls(stub func(context.Context, string, float64, string) error) {
+func (fake *FakeDataPersistence) ValidateCalls(stub func(context.Context, string) error) {
 	fake.validateMutex.Lock()
 	defer fake.validateMutex.Unlock()
 	fake.ValidateStub = stub
 }
 
-func (fake *FakeDataPersistence) ValidateArgsForCall(i int) (context.Context, string, float64, string) {
+func (fake *FakeDataPersistence) ValidateArgsForCall(i int) (context.Context, string) {
 	fake.validateMutex.RLock()
 	defer fake.validateMutex.RUnlock()
 	argsForCall := fake.validateArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeDataPersistence) ValidateReturns(result1 error) {

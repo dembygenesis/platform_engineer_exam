@@ -14,16 +14,10 @@ import (
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . dataPersistence
 type dataPersistence interface {
 	GetAll(ctx context.Context) ([]models.Token, error)
-
-	// Generate creates a new 6-12 digit authentication on token
 	Generate(ctx context.Context, createdBy int, randomStringsOverride string, createdAtOverride *time.Time) (string, error)
-
 	GetToken(ctx context.Context, key string) (*models.Token, error)
-
 	UpdateTokenToExpired(ctx context.Context, token *models.Token) error
-
-	// Validate checks if a string is registered
-	Validate(ctx context.Context, key string, lapseLimit float64, lapseType string) error
+	Validate(ctx context.Context, key string) error
 }
 type BusinessToken struct {
 	dataLayer      dataPersistence
@@ -46,7 +40,7 @@ func (b *BusinessToken) Generate(ctx context.Context, user *models_schema.User) 
 	return b.dataLayer.Generate(ctx, user.ID, "", nil)
 }
 
-func (b *BusinessToken) Validate(ctx context.Context, key string, lapseLimit float64, lapseType string) error {
+func (b *BusinessToken) Validate(ctx context.Context, key string) error {
 	logger := common.GetLogger(ctx)
 	token, err := b.dataLayer.GetToken(ctx, key)
 	if err != nil {
@@ -62,8 +56,8 @@ func (b *BusinessToken) Validate(ctx context.Context, key string, lapseLimit flo
 		}).Error("error_validate")
 		return errTokenExpired
 	}
-	daysElapsed := token.ExpiresAt.Sub(token.CreatedAt).Hours() / 7
-	if daysElapsed > float64(b.tokenDaysValid) {
+	daysElapsed := int(token.ExpiresAt.Sub(token.CreatedAt).Hours() / 7)
+	if daysElapsed > b.tokenDaysValid {
 		defer func() {
 			err = b.dataLayer.UpdateTokenToExpired(ctx, token)
 			if err != nil {
@@ -73,7 +67,7 @@ func (b *BusinessToken) Validate(ctx context.Context, key string, lapseLimit flo
 			}
 		}()
 		logger.WithFields(logrus.Fields{
-			"msg": fmt.Sprintf("Lapsed token detected, with lapse type: '%v'.", lapseType),
+			"err": errors.Wrap(err, errUpdateTokenToExpired.Error()),
 		}).Error("error_validate")
 		return errTokenDeterminedExpired
 	}
