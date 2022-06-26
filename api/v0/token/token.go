@@ -7,66 +7,89 @@ import (
 	"net/http"
 )
 
-func ValidateToken(c *fiber.Ctx) error {
-	token := c.Params("token")
+func ValidateToken(ctx *fiber.Ctx) error {
+	token := ctx.Params("token")
 	if token == "" {
-		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapStrInErrMap("token is missing"))
+		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapStrInErrMap("token is missing"))
 	}
 
-	ctn, err := helpers.GetContainer(c)
+	ctn, err := helpers.GetContainer(ctx)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
 
 	biz, err := ctn.SafeGetBusinessToken()
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
 
-	err = biz.Validate(c.Context(), token)
+	err = biz.Validate(ctx.Context(), token)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
-	return c.Status(http.StatusOK).JSON(true)
+	return ctx.Status(http.StatusOK).JSON(true)
 }
 
-func GetAll(c *fiber.Ctx) error {
-	ctn, err := helpers.GetContainer(c)
+func GetAll(ctx *fiber.Ctx) error {
+	ctn, err := helpers.GetContainer(ctx)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
 	biz, err := ctn.SafeGetBusinessToken()
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
 
-	tokens, err := biz.GetAll(c.Context())
+	tokens, err := biz.GetAll(ctx.Context())
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
 
-	return c.Status(http.StatusCreated).JSON(tokens)
+	return ctx.Status(http.StatusCreated).JSON(tokens)
 }
 
-func GetToken(c *fiber.Ctx) error {
-	ctn, err := helpers.GetContainer(c)
+func Revoke(ctx *fiber.Ctx) error {
+	token := ctx.Params("token")
+	if token == "" {
+		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapStrInErrMap("token is missing"))
+	}
+
+	ctn, err := helpers.GetContainer(ctx)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
 	biz, err := ctn.SafeGetBusinessToken()
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
 
-	userMeta, ok := c.Locals("userMeta").(*models_schema.User)
+	err = biz.Revoke(ctx.Context(), token)
+	if err != nil {
+		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+	}
+
+	return ctx.Status(http.StatusOK).SendString("Revoked token access!")
+}
+
+func GetToken(ctx *fiber.Ctx) error {
+	ctn, err := helpers.GetContainer(ctx)
+	if err != nil {
+		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+	}
+	biz, err := ctn.SafeGetBusinessToken()
+	if err != nil {
+		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+	}
+
+	userMeta, ok := ctx.Locals("userMeta").(*models_schema.User)
 	if !ok {
-		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapStrInErrMap("userMeta conversion fails"))
+		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapStrInErrMap("userMeta conversion fails"))
 	}
 
-	generatedToken, err := biz.Generate(c.Context(), userMeta)
+	generatedToken, err := biz.Generate(ctx.Context(), userMeta)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
+		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
 
-	return c.Status(http.StatusCreated).JSON(generatedToken)
+	return ctx.Status(http.StatusCreated).JSON(generatedToken)
 }

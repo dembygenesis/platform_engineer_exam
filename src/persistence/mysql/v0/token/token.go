@@ -20,6 +20,11 @@ type PersistenceToken struct {
 	db *sql.DB
 }
 
+func (p *PersistenceToken) RevokeToken(ctx context.Context, key string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 const (
 	min = 6
 	max = 12

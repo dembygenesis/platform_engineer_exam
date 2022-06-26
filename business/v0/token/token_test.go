@@ -11,6 +11,37 @@ import (
 	"time"
 )
 
+func TestBusinessToken_Revoke_Fail(t *testing.T) {
+	tokenKey := "123456"
+
+	fakeDataPersistence := tokenfakes.FakeDataPersistence{}
+	fakeDataPersistence.RevokeTokenReturns(errTokenRevoked)
+
+	businessToken := NewBusinessToken(&fakeDataPersistence, 7)
+	err := businessToken.Revoke(context.Background(), tokenKey)
+	t.Run("Test Revoke - Fail Path", func(t *testing.T) {
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errTokenRevoked.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
+}
+
+func TestBusinessToken_Revoke_HappyPath(t *testing.T) {
+	tokenKey := "123456"
+
+	fakeDataPersistence := tokenfakes.FakeDataPersistence{}
+	fakeDataPersistence.RevokeToken(context.Background(), "abc")
+	fakeDataPersistence.RevokeTokenReturns(nil)
+
+	businessToken := NewBusinessToken(&fakeDataPersistence, 7)
+	err := businessToken.Revoke(context.Background(), tokenKey)
+	t.Run("Test Revoke - Happy Path", func(t *testing.T) {
+		require.NoError(t, err)
+	})
+}
+
 func TestBusinessToken_Validate_HappyPath(t *testing.T) {
 	tokenKey := "123456"
 

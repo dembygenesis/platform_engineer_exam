@@ -53,6 +53,18 @@ type FakeDataPersistence struct {
 		result1 *models.Token
 		result2 error
 	}
+	RevokeTokenStub        func(context.Context, string) error
+	revokeTokenMutex       sync.RWMutex
+	revokeTokenArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+	}
+	revokeTokenReturns struct {
+		result1 error
+	}
+	revokeTokenReturnsOnCall map[int]struct {
+		result1 error
+	}
 	UpdateTokenToExpiredStub        func(context.Context, *models.Token) error
 	updateTokenToExpiredMutex       sync.RWMutex
 	updateTokenToExpiredArgsForCall []struct {
@@ -265,6 +277,68 @@ func (fake *FakeDataPersistence) GetTokenReturnsOnCall(i int, result1 *models.To
 	}{result1, result2}
 }
 
+func (fake *FakeDataPersistence) RevokeToken(arg1 context.Context, arg2 string) error {
+	fake.revokeTokenMutex.Lock()
+	ret, specificReturn := fake.revokeTokenReturnsOnCall[len(fake.revokeTokenArgsForCall)]
+	fake.revokeTokenArgsForCall = append(fake.revokeTokenArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
+	stub := fake.RevokeTokenStub
+	fakeReturns := fake.revokeTokenReturns
+	fake.recordInvocation("RevokeToken", []interface{}{arg1, arg2})
+	fake.revokeTokenMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeDataPersistence) RevokeTokenCallCount() int {
+	fake.revokeTokenMutex.RLock()
+	defer fake.revokeTokenMutex.RUnlock()
+	return len(fake.revokeTokenArgsForCall)
+}
+
+func (fake *FakeDataPersistence) RevokeTokenCalls(stub func(context.Context, string) error) {
+	fake.revokeTokenMutex.Lock()
+	defer fake.revokeTokenMutex.Unlock()
+	fake.RevokeTokenStub = stub
+}
+
+func (fake *FakeDataPersistence) RevokeTokenArgsForCall(i int) (context.Context, string) {
+	fake.revokeTokenMutex.RLock()
+	defer fake.revokeTokenMutex.RUnlock()
+	argsForCall := fake.revokeTokenArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeDataPersistence) RevokeTokenReturns(result1 error) {
+	fake.revokeTokenMutex.Lock()
+	defer fake.revokeTokenMutex.Unlock()
+	fake.RevokeTokenStub = nil
+	fake.revokeTokenReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeDataPersistence) RevokeTokenReturnsOnCall(i int, result1 error) {
+	fake.revokeTokenMutex.Lock()
+	defer fake.revokeTokenMutex.Unlock()
+	fake.RevokeTokenStub = nil
+	if fake.revokeTokenReturnsOnCall == nil {
+		fake.revokeTokenReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.revokeTokenReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeDataPersistence) UpdateTokenToExpired(arg1 context.Context, arg2 *models.Token) error {
 	fake.updateTokenToExpiredMutex.Lock()
 	ret, specificReturn := fake.updateTokenToExpiredReturnsOnCall[len(fake.updateTokenToExpiredArgsForCall)]
@@ -336,6 +410,8 @@ func (fake *FakeDataPersistence) Invocations() map[string][][]interface{} {
 	defer fake.getAllMutex.RUnlock()
 	fake.getTokenMutex.RLock()
 	defer fake.getTokenMutex.RUnlock()
+	fake.revokeTokenMutex.RLock()
+	defer fake.revokeTokenMutex.RUnlock()
 	fake.updateTokenToExpiredMutex.RLock()
 	defer fake.updateTokenToExpiredMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

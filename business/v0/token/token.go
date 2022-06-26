@@ -17,10 +17,9 @@ type dataPersistence interface {
 	Generate(ctx context.Context, createdBy int, randomStringsOverride string, createdAtOverride *time.Time) (string, error)
 	GetToken(ctx context.Context, key string) (*models.Token, error)
 	UpdateTokenToExpired(ctx context.Context, token *models.Token) error
-
-	// Delete this
-	// Validate(ctx context.Context, key string) error
+	RevokeToken(ctx context.Context, key string) error
 }
+
 type BusinessToken struct {
 	dataLayer      dataPersistence
 	tokenDaysValid int
@@ -28,6 +27,7 @@ type BusinessToken struct {
 
 var (
 	errGetToken               = errors.New("error, get fails")
+	errRevokeToken            = errors.New("error revoking token")
 	errTokenRevoked           = errors.New("error, token is revoked")
 	errTokenExpired           = errors.New("error, token has already expired")
 	errTokenDeterminedExpired = errors.New("error, token has already expired")
@@ -40,6 +40,14 @@ func (b *BusinessToken) GetAll(ctx context.Context) ([]models.Token, error) {
 
 func (b *BusinessToken) Generate(ctx context.Context, user *models_schema.User) (string, error) {
 	return b.dataLayer.Generate(ctx, user.ID, "", nil)
+}
+
+func (b *BusinessToken) Revoke(ctx context.Context, key string) error {
+	err := b.dataLayer.RevokeToken(ctx, key)
+	if err != nil {
+		return errors.Wrap(err, errRevokeToken.Error())
+	}
+	return nil
 }
 
 func (b *BusinessToken) Validate(ctx context.Context, key string) error {
