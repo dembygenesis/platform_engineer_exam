@@ -15,5 +15,5 @@ func GetRouter(app *fiber.App, ctn *dic.Container) {
 	v0token.Get("/", middlewares.ProtectedRoute(ctn), middlewares.AttachUserMeta, token.GetAll)
 	v0token.Post("/", middlewares.ProtectedRoute(ctn), middlewares.AttachUserMeta, token.GetToken)
 	v0token.Get("/:token/validate", middlewares.Throttle(), token.ValidateToken)
-	v0token.Delete("/:token/revoke", middlewares.Throttle(), token.Revoke)
+	v0token.Delete("/:token/revoke", middlewares.ProtectedRoute(ctn), middlewares.AttachUserMeta, token.Revoke)
 }

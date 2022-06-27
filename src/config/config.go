@@ -29,7 +29,7 @@ type App struct {
 }
 
 type API struct {
-	Port int `mapstructure:"PORT"`
+	Port int `mapstructure:"API_PORT"`
 }
 
 type Config struct {

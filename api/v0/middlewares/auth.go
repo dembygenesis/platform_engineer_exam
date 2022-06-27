@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/dembygenesis/platform_engineer_exam/api/helpers"
 	"github.com/dembygenesis/platform_engineer_exam/dependency_injection/dic"
+	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/dembygenesis/platform_engineer_exam/src/utils/common"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
@@ -66,6 +67,8 @@ func AttachUserMeta(ctx *fiber.Ctx) error {
 		}).Error("error_extract_authed_user_meta")
 		return ctx.Status(http.StatusUnauthorized).JSON(helpers.WrapErrInErrMap(err))
 	}
-	ctx.Locals(UserMetaKey, userMeta)
+	ctx.Locals(UserMetaKey, &models.User{
+		Id: userMeta.ID,
+	})
 	return ctx.Next()
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/dembygenesis/platform_engineer_exam/models"
-	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/models_schema"
 	"github.com/dembygenesis/platform_engineer_exam/src/utils/common"
 	"github.com/friendsofgo/errors"
 	"github.com/sirupsen/logrus"
@@ -45,8 +44,8 @@ func (b *BusinessToken) GetAll(ctx context.Context) ([]models.Token, error) {
 	return tokens, nil
 }
 
-func (b *BusinessToken) Generate(ctx context.Context, user *models_schema.User) (string, error) {
-	tokenKey, err := b.dataLayer.Generate(ctx, user.ID, b.randomCharMinLength, b.randomCharMaxLength)
+func (b *BusinessToken) Generate(ctx context.Context, user *models.User) (string, error) {
+	tokenKey, err := b.dataLayer.Generate(ctx, user.Id, b.randomCharMinLength, b.randomCharMaxLength)
 	if err != nil {
 		return "", errors.Wrap(err, errGenerateToken.Error())
 	}

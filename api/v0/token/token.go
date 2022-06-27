@@ -2,7 +2,7 @@ package token
 
 import (
 	"github.com/dembygenesis/platform_engineer_exam/api/helpers"
-	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/models_schema"
+	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
 )
@@ -81,7 +81,7 @@ func GetToken(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
 
-	userMeta, ok := ctx.Locals("userMeta").(*models_schema.User)
+	userMeta, ok := ctx.Locals("userMeta").(*models.User)
 	if !ok {
 		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapStrInErrMap("userMeta conversion fails"))
 	}
