@@ -7,6 +7,18 @@ import (
 	"net/http"
 )
 
+// ValidateToken
+// @Id ValidateToken
+// @Summary Validate
+// @Description Validates a string token passed
+// @Tags Token
+// @Param token path string true "token"
+// @Accept application/json
+// @Produce application/json
+// @Success 200 {boolean} boolean
+// @Failure 400 {object} models.AuthFailBadRequest
+// @Failure 500 {object} models.AuthFailInternalServerError
+// @Router /v0/token/{token}/validate [get]
 func ValidateToken(ctx *fiber.Ctx) error {
 	token := ctx.Params("token")
 	if token == "" {
@@ -30,10 +42,10 @@ func ValidateToken(ctx *fiber.Ctx) error {
 	return ctx.Status(http.StatusOK).JSON(true)
 }
 
-// GetAll func for creates a new book.
+// GetAll
 // @Id GetAll
+// @Summary Fetch all
 // @Description Fetches all tokens added by the admin user
-// @Summary Fetches all tokens
 // @Tags Token
 // @Accept application/json
 // @Produce application/json
@@ -60,6 +72,19 @@ func GetAll(ctx *fiber.Ctx) error {
 	return ctx.Status(http.StatusCreated).JSON(tokens)
 }
 
+// Revoke
+// @Id Revoke
+// @Summary Revoke
+// @Description Revokes a token's access
+// @Tags Token
+// @Accept application/json
+// @Produce application/json
+// @Param token path string true "token"
+// @Success 200 {boolean} boolean
+// @Failure 400 {object} models.AuthFailBadRequest
+// @Failure 500 {object} models.AuthFailInternalServerError
+// @Security BasicAuth
+// @Router /v0/token/{token}/revoke [delete]
 func Revoke(ctx *fiber.Ctx) error {
 	token := ctx.Params("token")
 	if token == "" {
@@ -85,12 +110,12 @@ func Revoke(ctx *fiber.Ctx) error {
 
 // GetToken Creates a new invite token
 // @Id GetToken
+// @Summary Create
 // @Description Creates a new invite token
-// @Summary Creates a new invite token
 // @Tags Token
 // @Accept application/json
 // @Produce application/json
-// @Success 200 {string} string
+// @Success 201 {string} string
 // @Failure 400 {object} models.AuthFailBadRequest
 // @Failure 500 {object} models.AuthFailInternalServerError
 // @Security BasicAuth

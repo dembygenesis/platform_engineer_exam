@@ -41,7 +41,7 @@ const docTemplate = `{
                 "tags": [
                     "Token"
                 ],
-                "summary": "Fetches all tokens",
+                "summary": "Fetch all",
                 "operationId": "GetAll",
                 "responses": {
                     "200": {
@@ -83,13 +83,108 @@ const docTemplate = `{
                 "tags": [
                     "Token"
                 ],
-                "summary": "Creates a new invite token",
+                "summary": "Create",
                 "operationId": "GetToken",
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.AuthFailBadRequest"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.AuthFailInternalServerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v0/token/{token}/revoke": {
+            "delete": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Revokes a token's access",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Token"
+                ],
+                "summary": "Revoke",
+                "operationId": "Revoke",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "type": "boolean"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.AuthFailBadRequest"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.AuthFailInternalServerError"
+                        }
+                    }
+                }
+            }
+        },
+        "/v0/token/{token}/validate": {
+            "get": {
+                "description": "Validates a string token passed",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Token"
+                ],
+                "summary": "Validate",
+                "operationId": "ValidateToken",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "boolean"
                         }
                     },
                     "400": {

@@ -38,10 +38,11 @@ var (
 func (p *PersistenceToken) RevokeToken(ctx context.Context, key string) error {
 	token, err := models_schema.Tokens(
 		models_schema.TokenWhere.Key.EQ(key),
+		models_schema.TokenWhere.Revoked.EQ(false),
 	).One(ctx, p.db)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return errors.Wrap(err, errTokenNotFound.Error())
+			return errTokenNotFound
 		}
 		return errors.Wrap(err, errFetchToken.Error())
 	}
