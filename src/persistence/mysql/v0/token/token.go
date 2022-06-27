@@ -3,6 +3,7 @@ package token
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/models_schema"
@@ -17,7 +18,9 @@ import (
 )
 
 type PersistenceToken struct {
-	db *sql.DB
+	db               *sql.DB
+	mockRandomString string
+	mockCreatedTime  time.Time
 }
 
 var (
@@ -120,6 +123,10 @@ func (p *PersistenceToken) Generate(ctx context.Context, createdBy int, randomCh
 		randomizedCharLength := rand.Intn(randomCharMaxLength-randomCharMinLength) + randomCharMinLength
 		randomString = generateRandomCharacters(randomizedCharLength)
 
+		if p.mockRandomString != "" {
+			randomString = p.mockRandomString
+		}
+
 		token, err := models_schema.Tokens(
 			models_schema.TokenWhere.Key.EQ(randomString),
 		).All(mysql.BoilCtx, p.db)
@@ -132,6 +139,12 @@ func (p *PersistenceToken) Generate(ctx context.Context, createdBy int, randomCh
 	}
 
 	createdAt := time.Now()
+	if !p.mockCreatedTime.IsZero() {
+
+		createdAt = p.mockCreatedTime
+		fmt.Println("=============== in *p.mockCreatedTime", p.mockCreatedTime)
+	}
+
 	newToken := models_schema.Token{
 		Key:       randomString,
 		CreatedBy: createdBy,
@@ -149,5 +162,5 @@ func (p *PersistenceToken) Generate(ctx context.Context, createdBy int, randomCh
 
 // NewPersistenceToken returns a new *PersistenceToken instance
 func NewPersistenceToken(db *sql.DB) *PersistenceToken {
-	return &PersistenceToken{db}
+	return &PersistenceToken{db: db}
 }

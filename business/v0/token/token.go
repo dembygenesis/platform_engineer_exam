@@ -12,7 +12,8 @@ import (
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . dataPersistence
 type dataPersistence interface {
 	GetAll(ctx context.Context) ([]models.Token, error)
-	Generate(ctx context.Context, createdBy int, randomCharMinLength int, randomCharMaxLength int) (string, error)
+	Generate(ctx context.Context, createdBy int, randomCharMinLength int,
+		randomCharMaxLength int, randomStringOverride string) (string, error)
 	GetToken(ctx context.Context, key string) (*models.Token, error)
 	UpdateTokenToExpired(ctx context.Context, token *models.Token) error
 	RevokeToken(ctx context.Context, key string) error
@@ -45,7 +46,7 @@ func (b *BusinessToken) GetAll(ctx context.Context) ([]models.Token, error) {
 }
 
 func (b *BusinessToken) Generate(ctx context.Context, user *models.User) (string, error) {
-	tokenKey, err := b.dataLayer.Generate(ctx, user.Id, b.randomCharMinLength, b.randomCharMaxLength)
+	tokenKey, err := b.dataLayer.Generate(ctx, user.Id, b.randomCharMinLength, b.randomCharMaxLength, "")
 	if err != nil {
 		return "", errors.Wrap(err, errGenerateToken.Error())
 	}
