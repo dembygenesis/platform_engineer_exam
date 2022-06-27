@@ -45,18 +45,11 @@ func (b *BusinessToken) GetAll(ctx context.Context) ([]models.Token, error) {
 }
 
 func (b *BusinessToken) Generate(ctx context.Context, user *models_schema.User) (string, error) {
-	// Generate dummy string,
-
-	// Insert
-
-	// It either fails, or not.
-	/*tokenKey, err := b.dataLayer.Generate(ctx, user.ID, "", nil)
+	tokenKey, err := b.dataLayer.Generate(ctx, user.ID, "", nil)
 	if err != nil {
 		return "", errors.Wrap(err, errGenerateToken.Error())
 	}
-	return tokenKey, nil*/
-
-	return "", nil
+	return tokenKey, nil
 }
 
 func (b *BusinessToken) Revoke(ctx context.Context, key string) error {

@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"context"
 	"github.com/dembygenesis/platform_engineer_exam/api/helpers"
 	"github.com/dembygenesis/platform_engineer_exam/dependency_injection/dic"
 	"github.com/dembygenesis/platform_engineer_exam/src/utils/common"
@@ -11,8 +12,9 @@ import (
 )
 
 const (
-	userKey = "user"
-	passKey = "pass"
+	userKey     = "user"
+	passKey     = "pass"
+	UserMetaKey = "userMeta"
 )
 
 // ProtectedRoute guards a route using the "Basic Auth" protocol
@@ -42,7 +44,11 @@ func ProtectedRoute(ctn *dic.Container) func(ctx *fiber.Ctx) error {
 	})
 }
 
-func ExtractAuthedUserMeta(ctx *fiber.Ctx) error {
+func Extract(ctx context.Context) error {
+	return nil
+}
+
+func AttachUserMeta(ctx *fiber.Ctx) error {
 	ctn, err := helpers.GetContainer(ctx)
 	if err != nil {
 		return err
@@ -60,6 +66,6 @@ func ExtractAuthedUserMeta(ctx *fiber.Ctx) error {
 		}).Error("error_extract_authed_user_meta")
 		return ctx.Status(http.StatusUnauthorized).JSON(helpers.WrapErrInErrMap(err))
 	}
-	ctx.Locals("userMeta", userMeta)
+	ctx.Locals(UserMetaKey, userMeta)
 	return ctx.Next()
 }
