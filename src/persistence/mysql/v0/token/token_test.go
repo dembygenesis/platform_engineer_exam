@@ -378,9 +378,53 @@ func TestPersistenceToken_RevokeToken_Fail_Update(t *testing.T) {
 }
 
 func TestPersistenceToken_GetToken_HappyPath(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
 
+	rows := sqlmock.NewRows([]string{"id"})
+	rows.AddRow(0)
+	mock.ExpectQuery("SELECT `token.*").WillReturnRows(rows)
+
+	persistenceToken := PersistenceToken{db: db}
+	_, err = persistenceToken.GetToken(context.Background(), "12345")
+	t.Run("Test GetToken - Happy Path", func(t *testing.T) {
+		require.NoError(t, err)
+	})
 }
 
-func TestPersistenceToken_GetToken_FailPath(t *testing.T) {
+func TestPersistenceToken_GetToken_FailPath_FetchTokenByKey(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
 
+	rows := sqlmock.NewRows([]string{"id"})
+	rows.AddRow(0)
+	mock.ExpectQuery("SELECT `token.*").WillReturnError(errFetchTokenByKey)
+
+	persistenceToken := PersistenceToken{db: db}
+	_, err = persistenceToken.GetToken(context.Background(), "12345")
+	t.Run("Test GetToken - Fail Path", func(t *testing.T) {
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errFetchTokenByKey.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
+}
+
+func TestPersistenceToken_GetToken_FailPath_NoResults(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+
+	rows := sqlmock.NewRows([]string{"id"})
+	mock.ExpectQuery("SELECT `token.*").WillReturnRows(rows)
+
+	persistenceToken := PersistenceToken{db: db}
+	_, err = persistenceToken.GetToken(context.Background(), "12345")
+	t.Run("Test GetToken - Fail Path", func(t *testing.T) {
+		require.Error(t, err)
+
+		errMsg := err.Error()
+		wantErrMsg := errFetchTokenByKeyNoResult.Error()
+		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
+	})
 }

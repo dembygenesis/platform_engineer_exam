@@ -77,7 +77,7 @@ func (p *PersistenceToken) GetToken(ctx context.Context, key string) (*models.To
 		return nil, errors.Wrap(err, errFetchTokenByKey.Error())
 	}
 	if len(container) == 0 || container == nil {
-		return nil, errors.Wrap(err, errFetchTokenByKeyNoResult.Error())
+		return nil, errFetchTokenByKeyNoResult
 	}
 	return &container[0], nil
 }
