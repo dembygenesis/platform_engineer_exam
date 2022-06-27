@@ -16,26 +16,37 @@ type Provider struct {
 }
 
 const (
-	configLayer                = "config"
+	configLayer = "config"
+)
+
+const (
 	mysqlConnection            = "mysql_connection"
 	mysqlTokenPersistenceLayer = "mysql_token_persistence"
 	mysqlUserPersistenceLayer  = "mysql_user_persistence"
-	businessToken              = "business_token"
 )
 
-// getServices is the main configuration func that produces the singleton
-func getServices() (*[]dingo.Def, error) {
-	var Services = []dingo.Def{
+const (
+	businessToken = "business_token"
+)
+
+func getBusinessLayers() *[]dingo.Def {
+	return &[]dingo.Def{
 		{
-			Name: configLayer,
-			Build: func() (*config.Config, error) {
-				cfg, err := config.NewConfig(".env")
-				if err != nil {
-					log.Fatalf("error setting up the config layer: :%v", err.Error())
-				}
-				return cfg, nil
+			Name: businessToken,
+			Build: func(config *config.Config, persistenceToken *PersistenceToken.PersistenceToken) (*BusinessToken.BusinessToken, error) {
+				return BusinessToken.NewBusinessToken(
+					persistenceToken,
+					config.App.TokenDaysValid,
+					config.App.RandomCharMinLength,
+					config.App.RandomCharMaxLength,
+				), nil
 			},
 		},
+	}
+}
+
+func getPersistenceLayers() *[]dingo.Def {
+	return &[]dingo.Def{
 		{
 			Name: mysqlConnection,
 			Build: func(config *config.Config) (*PersistenceMYSQL.MYSQLConnection, error) {
@@ -58,19 +69,33 @@ func getServices() (*[]dingo.Def, error) {
 				return user.NewPersistenceUser(connection.DB), nil
 			},
 		},
+	}
+}
+
+func getConfigLayers() *[]dingo.Def {
+	return &[]dingo.Def{
 		{
-			Name: businessToken,
-			Build: func(config *config.Config, persistenceToken *PersistenceToken.PersistenceToken) (*BusinessToken.BusinessToken, error) {
-				return BusinessToken.NewBusinessToken(
-					persistenceToken,
-					config.App.TokenDaysValid,
-					config.App.RandomCharMinLength,
-					config.App.RandomCharMaxLength,
-				), nil
+			Name: configLayer,
+			Build: func() (*config.Config, error) {
+				cfg, err := config.NewConfig(".env")
+				if err != nil {
+					log.Fatalf("error setting up the config layer: :%v", err.Error())
+				}
+				return cfg, nil
 			},
 		},
 	}
-	return &Services, nil
+}
+
+// getServices is the main configuration func that produces the singleton
+func getServices() (*[]dingo.Def, error) {
+	var services []dingo.Def
+
+	services = append(services, *getConfigLayers()...)
+	services = append(services, *getBusinessLayers()...)
+	services = append(services, *getPersistenceLayers()...)
+
+	return &services, nil
 }
 
 // Load bootstrap the dependencies
