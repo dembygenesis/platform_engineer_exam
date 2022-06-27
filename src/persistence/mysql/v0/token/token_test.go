@@ -31,8 +31,6 @@ func configureMockGenerateFailInsertToken(mock sqlmock.Sqlmock, randomString str
 }
 
 func configureMockGeneratePassInsertToken(mock sqlmock.Sqlmock, randomString string, createdBy int, createdAt time.Time) {
-	fmt.Println("=============== in configureMockGeneratePassInsertToken", createdAt)
-
 	var mockIdReturned int64 = 1
 	sqlInsert := "INSERT INTO `token` (`key`,`created_at`,`created_by`,`expires_at`) VALUES (?,?,?,?)"
 	mock.ExpectExec(regexp.QuoteMeta(sqlInsert)).WithArgs(
@@ -118,46 +116,6 @@ func TestPersistenceToken_Generate_FailInsertNewToken(t *testing.T) {
 		wantErrMsg := errInsertNewToken.Error()
 		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
 	})
-}
-
-func configureMockValidatePassGetToken(mock sqlmock.Sqlmock, key string) {
-	sqlGetToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?) LIMIT 1;"
-	rows := sqlmock.NewRows([]string{"key", "expired", "revoked"}).AddRow(key, false, false)
-	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnRows(rows)
-}
-
-func configureMockValidateFailErrTokenNotFound(mock sqlmock.Sqlmock, key string) {
-	sqlGetToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?) LIMIT 1;"
-	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnError(sql.ErrNoRows)
-}
-
-func configureMockValidateFailErrFetchToken(mock sqlmock.Sqlmock, key string) {
-	sqlGetToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?) LIMIT 1;"
-	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnError(errFetchToken)
-}
-
-func configureMockValidatePassGetTokenFailRevoked(mock sqlmock.Sqlmock, key string) {
-	sqlGetToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?) LIMIT 1;"
-	rows := sqlmock.NewRows([]string{"key", "expired", "revoked"}).AddRow(key, false, true)
-	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnRows(rows)
-}
-
-func configureMockValidatePassGetTokenFailExpired(mock sqlmock.Sqlmock, key string) {
-	sqlGetToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?) LIMIT 1;"
-	rows := sqlmock.NewRows([]string{"key", "expired", "revoked"}).AddRow(key, true, false)
-	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnRows(rows)
-}
-
-func configureMockValidatePassGetTokenFailDeterminedExpired(mock sqlmock.Sqlmock, key string) {
-	sqlGetToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?) LIMIT 1;"
-
-	expiresAt := time.Now()
-	createdAt := expiresAt.AddDate(0, 0, -8)
-
-	headers := []string{"key", "expired", "revoked", "created_at", "expires_at"}
-	data := []driver.Value{key, false, false, createdAt, expiresAt}
-	rows := sqlmock.NewRows(headers).AddRow(data...)
-	mock.ExpectQuery(regexp.QuoteMeta(sqlGetToken)).WithArgs(key).WillReturnRows(rows)
 }
 
 func configureMockGetAllFetchTokensSuccess(mock sqlmock.Sqlmock) {
