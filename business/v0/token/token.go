@@ -8,21 +8,22 @@ import (
 	"github.com/dembygenesis/platform_engineer_exam/src/utils/common"
 	"github.com/friendsofgo/errors"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . dataPersistence
 type dataPersistence interface {
 	GetAll(ctx context.Context) ([]models.Token, error)
-	Generate(ctx context.Context, createdBy int, randomStringsOverride string, createdAtOverride *time.Time) (string, error)
+	Generate(ctx context.Context, createdBy int, randomCharMinLength int, randomCharMaxLength int) (string, error)
 	GetToken(ctx context.Context, key string) (*models.Token, error)
 	UpdateTokenToExpired(ctx context.Context, token *models.Token) error
 	RevokeToken(ctx context.Context, key string) error
 }
 
 type BusinessToken struct {
-	dataLayer      dataPersistence
-	tokenDaysValid int
+	dataLayer           dataPersistence
+	tokenDaysValid      int
+	randomCharMinLength int
+	randomCharMaxLength int
 }
 
 var (
@@ -45,7 +46,7 @@ func (b *BusinessToken) GetAll(ctx context.Context) ([]models.Token, error) {
 }
 
 func (b *BusinessToken) Generate(ctx context.Context, user *models_schema.User) (string, error) {
-	tokenKey, err := b.dataLayer.Generate(ctx, user.ID, "", nil)
+	tokenKey, err := b.dataLayer.Generate(ctx, user.ID, b.randomCharMinLength, b.randomCharMaxLength)
 	if err != nil {
 		return "", errors.Wrap(err, errGenerateToken.Error())
 	}
@@ -95,9 +96,12 @@ func (b *BusinessToken) Validate(ctx context.Context, key string) error {
 	return nil
 }
 
-func NewBusinessToken(mysqlDataPersistence dataPersistence, tokenDaysValid int) *BusinessToken {
+func NewBusinessToken(mysqlDataPersistence dataPersistence, tokenDaysValid int, randomCharMinLength int,
+	randomCharMaxLength int) *BusinessToken {
 	return &BusinessToken{
-		dataLayer:      mysqlDataPersistence,
-		tokenDaysValid: tokenDaysValid,
+		dataLayer:           mysqlDataPersistence,
+		tokenDaysValid:      tokenDaysValid,
+		randomCharMinLength: randomCharMinLength,
+		randomCharMaxLength: randomCharMaxLength,
 	}
 }

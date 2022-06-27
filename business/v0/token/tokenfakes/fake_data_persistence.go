@@ -4,19 +4,18 @@ package tokenfakes
 import (
 	"context"
 	"sync"
-	"time"
 
 	"github.com/dembygenesis/platform_engineer_exam/models"
 )
 
 type FakeDataPersistence struct {
-	GenerateStub        func(context.Context, int, string, *time.Time) (string, error)
+	GenerateStub        func(context.Context, int, int, int) (string, error)
 	generateMutex       sync.RWMutex
 	generateArgsForCall []struct {
 		arg1 context.Context
 		arg2 int
-		arg3 string
-		arg4 *time.Time
+		arg3 int
+		arg4 int
 	}
 	generateReturns struct {
 		result1 string
@@ -81,14 +80,14 @@ type FakeDataPersistence struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeDataPersistence) Generate(arg1 context.Context, arg2 int, arg3 string, arg4 *time.Time) (string, error) {
+func (fake *FakeDataPersistence) Generate(arg1 context.Context, arg2 int, arg3 int, arg4 int) (string, error) {
 	fake.generateMutex.Lock()
 	ret, specificReturn := fake.generateReturnsOnCall[len(fake.generateArgsForCall)]
 	fake.generateArgsForCall = append(fake.generateArgsForCall, struct {
 		arg1 context.Context
 		arg2 int
-		arg3 string
-		arg4 *time.Time
+		arg3 int
+		arg4 int
 	}{arg1, arg2, arg3, arg4})
 	stub := fake.GenerateStub
 	fakeReturns := fake.generateReturns
@@ -109,13 +108,13 @@ func (fake *FakeDataPersistence) GenerateCallCount() int {
 	return len(fake.generateArgsForCall)
 }
 
-func (fake *FakeDataPersistence) GenerateCalls(stub func(context.Context, int, string, *time.Time) (string, error)) {
+func (fake *FakeDataPersistence) GenerateCalls(stub func(context.Context, int, int, int) (string, error)) {
 	fake.generateMutex.Lock()
 	defer fake.generateMutex.Unlock()
 	fake.GenerateStub = stub
 }
 
-func (fake *FakeDataPersistence) GenerateArgsForCall(i int) (context.Context, int, string, *time.Time) {
+func (fake *FakeDataPersistence) GenerateArgsForCall(i int) (context.Context, int, int, int) {
 	fake.generateMutex.RLock()
 	defer fake.generateMutex.RUnlock()
 	argsForCall := fake.generateArgsForCall[i]

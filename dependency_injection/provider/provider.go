@@ -61,7 +61,12 @@ func getServices() (*[]dingo.Def, error) {
 		{
 			Name: businessToken,
 			Build: func(config *config.Config, persistenceToken *PersistenceToken.PersistenceToken) (*BusinessToken.BusinessToken, error) {
-				return BusinessToken.NewBusinessToken(persistenceToken, config.App.TokenDaysValid), nil
+				return BusinessToken.NewBusinessToken(
+					persistenceToken,
+					config.App.TokenDaysValid,
+					config.App.RandomCharMinLength,
+					config.App.RandomCharMaxLength,
+				), nil
 			},
 		},
 	}

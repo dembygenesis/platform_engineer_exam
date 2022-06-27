@@ -20,11 +20,6 @@ type PersistenceToken struct {
 	db *sql.DB
 }
 
-const (
-	min = 6
-	max = 12
-)
-
 var (
 	errCheckUniqueToken        = errors.New("error checking for unique tokens")
 	errFetchToken              = errors.New("error fetching token")
@@ -110,7 +105,8 @@ func (p *PersistenceToken) GetAll(ctx context.Context) ([]models.Token, error) {
 }
 
 // Generate returns a unique string in the length range of 6-12 characters
-func (p *PersistenceToken) Generate(ctx context.Context, createdBy int, randomStringsOverride string, createdAtOverride *time.Time) (string, error) {
+func (p *PersistenceToken) Generate(ctx context.Context, createdBy int, randomCharMinLength int,
+	randomCharMaxLength int) (string, error) {
 	logger := common.GetLogger(ctx)
 	var randomString string
 	tokenVerifiedUnique := false
@@ -124,12 +120,8 @@ func (p *PersistenceToken) Generate(ctx context.Context, createdBy int, randomSt
 		}
 		loops++
 
-		randomizedCharLength := rand.Intn(max-min) + min
-		if len(randomStringsOverride) == 0 {
-			randomString = generateRandomCharacters(randomizedCharLength)
-		} else {
-			randomString = randomStringsOverride
-		}
+		randomizedCharLength := rand.Intn(randomCharMaxLength-randomCharMinLength) + randomCharMinLength
+		randomString = generateRandomCharacters(randomizedCharLength)
 
 		token, err := models_schema.Tokens(
 			models_schema.TokenWhere.Key.EQ(randomString),
@@ -141,10 +133,8 @@ func (p *PersistenceToken) Generate(ctx context.Context, createdBy int, randomSt
 			tokenVerifiedUnique = true
 		}
 	}
-	var createdAt time.Time
-	if createdAtOverride != nil {
-		createdAt = *createdAtOverride
-	}
+
+	createdAt := time.Now()
 	newToken := models_schema.Token{
 		Key:       randomString,
 		CreatedBy: createdBy,

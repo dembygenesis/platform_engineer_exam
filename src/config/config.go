@@ -23,7 +23,9 @@ type DatabaseCredentials struct {
 }
 
 type App struct {
-	TokenDaysValid int `mapstructure:"TOKEN_DAYS_VALID" validate:"required"`
+	TokenDaysValid      int `mapstructure:"APP_TOKEN_DAYS_VALID" validate:"required"`
+	RandomCharMinLength int `mapstructure:"APP_RANDOM_CHAR_MIN_LENGTH" validate:"required"`
+	RandomCharMaxLength int `mapstructure:"APP_RANDOM_CHAR_MAX_LENGTH" validate:"required"`
 }
 
 type API struct {

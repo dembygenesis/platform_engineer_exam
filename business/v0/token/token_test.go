@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-/*func TestBusinessToken_Generate_HappyPath(t *testing.T) {
+func TestBusinessToken_Generate_HappyPath(t *testing.T) {
 	fakeDataPersistence := tokenfakes.FakeDataPersistence{}
 	fakeDataPersistence.GetAllReturns([]models.Token{
 		{
@@ -25,6 +25,8 @@ import (
 		require.NoError(t, err)
 	})
 }
+
+/*
 
 func TestBusinessToken_Generate_FailPath(t *testing.T) {
 	fakeDataPersistence := tokenfakes.FakeDataPersistence{}
