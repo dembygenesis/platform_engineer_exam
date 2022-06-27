@@ -68,7 +68,19 @@ func TestPersistenceToken_Generate_HappyPath(t *testing.T) {
 	createdAt := time.Now()
 	createdById := 3
 
-	configureMockGeneratePassFetchToken(mock, randomString)
+	sqlToken := "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?);"
+	rows := sqlmock.NewRows([]string{
+		"id",
+	})
+	rows.AddRow("123")
+	mock.ExpectQuery(regexp.QuoteMeta(sqlToken)).WithArgs(randomString).WillReturnRows(rows)
+
+	sqlToken = "SELECT `token`.* FROM `token` WHERE (`token`.`key` = ?);"
+	rows = sqlmock.NewRows([]string{
+		"id",
+	})
+	mock.ExpectQuery(regexp.QuoteMeta(sqlToken)).WithArgs(randomString).WillReturnRows(rows)
+
 	configureMockGeneratePassInsertToken(mock, randomString, createdById, createdAt)
 
 	persistenceToken := PersistenceToken{db: db, mockRandomString: randomString, mockCreatedTime: createdAt}
