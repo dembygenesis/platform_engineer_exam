@@ -109,7 +109,7 @@ func TestPersistenceToken_Generate_FailInsertNewToken(t *testing.T) {
 	configureMockGeneratePassFetchToken(mock, randomString)
 	configureMockGenerateFailInsertToken(mock, randomString, createdAt)
 
-	persistenceToken := PersistenceToken{db: db}
+	persistenceToken := PersistenceToken{db: db, mockCreatedTime: createdAt, mockRandomString: randomString}
 	t.Run("Test Generate Fail Insert New Token", func(t *testing.T) {
 		_, err = persistenceToken.Generate(context.Background(), createdById, 6, 12)
 		require.Error(t, err)
