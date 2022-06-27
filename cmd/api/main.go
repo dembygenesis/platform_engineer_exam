@@ -34,6 +34,8 @@ func initAPI(ctn *dic.Container, cfg *config.Config) {
 		TimeZone:   "America/New_York",
 	}))
 
+	// app.Static("/docs", "./docs/index.html")
+	app.Static("/docs", "./docs")
 	app.Static("/", "./public")
 	api.GetRouter(app, ctn)
 
@@ -55,6 +57,18 @@ func initAPI(ctn *dic.Container, cfg *config.Config) {
 	}
 }
 
+// @title API
+// @version 1.0
+// @description This is an auto-generated API Docs.
+// @termsOfService http://swagger.io/terms/
+// @contact.name API Support
+// @contact.email your@mail.com
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @BasePath http://localhost:8081/api
+// @securityDefinitions.basic BasicAuth
+// @in header
+// @name HeaderAuth
 func main() {
 	builder, err := dic.NewBuilder()
 	if err != nil {
@@ -67,15 +81,5 @@ func main() {
 		log.Fatalf("error trying to fetch the config from the container: %v", err.Error())
 	}
 
-	/*mysql, err := ctn.SafeGetMysqlConnection()
-	if err != nil {
-		log.Fatalf("error trying to fetch the mysql connection from the container: %v", err.Error())
-	}
-	err = mysql.Ping()
-	if err != nil {
-		log.Fatalf("error trying to ping from the mysql persistence: %v", err.Error())
-	}*/
-
-	// initAPI(ctn, strconv.Itoa(cfg.API.Port), cfg.App.TokenLapseDuration)
 	initAPI(ctn, cfg)
 }

@@ -30,6 +30,18 @@ func ValidateToken(ctx *fiber.Ctx) error {
 	return ctx.Status(http.StatusOK).JSON(true)
 }
 
+// GetAll func for creates a new book.
+// @Id GetAll
+// @Description Fetches all tokens added by the admin user
+// @Summary Fetches all tokens
+// @Tags Token
+// @Accept application/json
+// @Produce application/json
+// @Success 200 {object} []models.Token
+// @Failure 400 {object} models.AuthFailBadRequest
+// @Failure 500 {object} models.AuthFailInternalServerError
+// @Security BasicAuth
+// @Router /v0/token [get]
 func GetAll(ctx *fiber.Ctx) error {
 	ctn, err := helpers.GetContainer(ctx)
 	if err != nil {
