@@ -364,15 +364,23 @@ func TestPersistenceToken_RevokeToken_Fail_Update(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id"})
 	rows.AddRow(0)
 	mock.ExpectQuery("SELECT `token.*").WillReturnRows(rows)
-	mock.ExpectExec("UPDATE `token` .*").WillReturnError(errUpdateTokenToExpired)
+	mock.ExpectExec("UPDATE `token` .*").WillReturnError(errUpdateTokenToRevoked)
 
 	persistenceToken := PersistenceToken{db: db}
 	err = persistenceToken.RevokeToken(context.Background(), "123456")
-	t.Run("Test RevokeToken - Happy Path", func(t *testing.T) {
+	t.Run("Test RevokeToken - Fail Path", func(t *testing.T) {
 		require.Error(t, err)
 
 		errMsg := err.Error()
-		wantErrMsg := errFetchToken.Error()
+		wantErrMsg := errUpdateTokenToRevoked.Error()
 		assert.Containsf(t, errMsg, wantErrMsg, "expected error containing %q, got %s", wantErrMsg, err)
 	})
+}
+
+func TestPersistenceToken_GetToken_HappyPath(t *testing.T) {
+
+}
+
+func TestPersistenceToken_GetToken_FailPath(t *testing.T) {
+
 }
