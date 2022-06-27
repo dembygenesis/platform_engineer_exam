@@ -75,6 +75,31 @@ paths:
       summary: Fetches all tokens
       tags:
       - Token
+    post:
+      consumes:
+      - application/json
+      description: Creates a new invite token
+      operationId: GetToken
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.AuthFailBadRequest'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.AuthFailInternalServerError'
+      security:
+      - BasicAuth: []
+      summary: Creates a new invite token
+      tags:
+      - Token
 securityDefinitions:
   BasicAuth:
     type: basic

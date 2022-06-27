@@ -83,6 +83,18 @@ func Revoke(ctx *fiber.Ctx) error {
 	return ctx.Status(http.StatusOK).SendString("Revoked token access!")
 }
 
+// GetToken Creates a new invite token
+// @Id GetToken
+// @Description Creates a new invite token
+// @Summary Creates a new invite token
+// @Tags Token
+// @Accept application/json
+// @Produce application/json
+// @Success 200 {string} string
+// @Failure 400 {object} models.AuthFailBadRequest
+// @Failure 500 {object} models.AuthFailInternalServerError
+// @Security BasicAuth
+// @Router /v0/token [post]
 func GetToken(ctx *fiber.Ctx) error {
 	ctn, err := helpers.GetContainer(ctx)
 	if err != nil {
