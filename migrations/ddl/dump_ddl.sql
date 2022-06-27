@@ -13,27 +13,24 @@ DROP TABLE IF EXISTS `token`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `token` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `key` varchar(12) NOT NULL,
-  `created_at` bigint DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `revoked` tinyint(1) NOT NULL DEFAULT '0',
   `expired` tinyint(1) NOT NULL DEFAULT '0',
   `created_by` int NOT NULL,
+  `expires_at` timestamp NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `token_name_uindex` (`key`),
   KEY `token_user_id_fk` (`created_by`),
   CONSTRAINT `token_user_id_fk` FOREIGN KEY (`created_by`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-LOCK TABLES `token` WRITE;
-/*!40000 ALTER TABLE `token` DISABLE KEYS */;
-/*!40000 ALTER TABLE `token` ENABLE KEYS */;
-UNLOCK TABLES;
 DROP TABLE IF EXISTS `user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `email` varchar(320) NOT NULL,
   `password` varchar(255) NOT NULL,
@@ -41,13 +38,8 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_email_uindex` (`email`),
   UNIQUE KEY `user_name_uindex` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
-LOCK TABLES `user` WRITE;
-/*!40000 ALTER TABLE `user` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
