@@ -10,10 +10,12 @@ import (
 
 	providerPkg "github.com/dembygenesis/platform_engineer_exam/dependency_injection/provider"
 
-	token1 "github.com/dembygenesis/platform_engineer_exam/business/v0/token"
+	middlewares "github.com/dembygenesis/platform_engineer_exam/api/v0/middlewares"
+	token1 "github.com/dembygenesis/platform_engineer_exam/api/v0/token"
+	token "github.com/dembygenesis/platform_engineer_exam/business/v0/token"
 	config "github.com/dembygenesis/platform_engineer_exam/src/config"
 	mysql "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql"
-	token "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/token"
+	token2 "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/token"
 	user "github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/v0/user"
 )
 
@@ -219,30 +221,270 @@ func (c *Container) IsClosed() bool {
 	return c.ctn.IsClosed()
 }
 
-// SafeGetBusinessToken retrieves the "business_token" object from the main scope.
+// SafeGetApiMiddlewares retrieves the "api_middlewares" object from the main scope.
 //
 // ---------------------------------------------
-// 	name: "business_token"
-// 	type: *token1.BusinessToken
+// 	name: "api_middlewares"
+// 	type: *middlewares.AuthRoutes
 // 	scope: "main"
 // 	build: func
 // 	params:
-// 		- "0": Service(*config.Config) ["config"]
-// 		- "1": Service(*token.PersistenceToken) ["mysql_token_persistence"]
+// 		- "0": Service(*user.PersistenceUser) ["mysql_user_persistence"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
 //
 // If the object can not be retrieved, it returns an error.
-func (c *Container) SafeGetBusinessToken() (*token1.BusinessToken, error) {
-	i, err := c.ctn.SafeGet("business_token")
+func (c *Container) SafeGetApiMiddlewares() (*middlewares.AuthRoutes, error) {
+	i, err := c.ctn.SafeGet("api_middlewares")
 	if err != nil {
-		var eo *token1.BusinessToken
+		var eo *middlewares.AuthRoutes
 		return eo, err
 	}
-	o, ok := i.(*token1.BusinessToken)
+	o, ok := i.(*middlewares.AuthRoutes)
 	if !ok {
-		return o, errors.New("could get 'business_token' because the object could not be cast to *token1.BusinessToken")
+		return o, errors.New("could get 'api_middlewares' because the object could not be cast to *middlewares.AuthRoutes")
+	}
+	return o, nil
+}
+
+// GetApiMiddlewares retrieves the "api_middlewares" object from the main scope.
+//
+// ---------------------------------------------
+// 	name: "api_middlewares"
+// 	type: *middlewares.AuthRoutes
+// 	scope: "main"
+// 	build: func
+// 	params:
+// 		- "0": Service(*user.PersistenceUser) ["mysql_user_persistence"]
+// 	unshared: false
+// 	close: false
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it panics.
+func (c *Container) GetApiMiddlewares() *middlewares.AuthRoutes {
+	o, err := c.SafeGetApiMiddlewares()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetApiMiddlewares retrieves the "api_middlewares" object from the main scope.
+//
+// ---------------------------------------------
+// 	name: "api_middlewares"
+// 	type: *middlewares.AuthRoutes
+// 	scope: "main"
+// 	build: func
+// 	params:
+// 		- "0": Service(*user.PersistenceUser) ["mysql_user_persistence"]
+// 	unshared: false
+// 	close: false
+// ---------------------------------------------
+//
+// This method can be called even if main is a sub-scope of the container.
+// If the object can not be retrieved, it returns an error.
+func (c *Container) UnscopedSafeGetApiMiddlewares() (*middlewares.AuthRoutes, error) {
+	i, err := c.ctn.UnscopedSafeGet("api_middlewares")
+	if err != nil {
+		var eo *middlewares.AuthRoutes
+		return eo, err
+	}
+	o, ok := i.(*middlewares.AuthRoutes)
+	if !ok {
+		return o, errors.New("could get 'api_middlewares' because the object could not be cast to *middlewares.AuthRoutes")
+	}
+	return o, nil
+}
+
+// UnscopedGetApiMiddlewares retrieves the "api_middlewares" object from the main scope.
+//
+// ---------------------------------------------
+// 	name: "api_middlewares"
+// 	type: *middlewares.AuthRoutes
+// 	scope: "main"
+// 	build: func
+// 	params:
+// 		- "0": Service(*user.PersistenceUser) ["mysql_user_persistence"]
+// 	unshared: false
+// 	close: false
+// ---------------------------------------------
+//
+// This method can be called even if main is a sub-scope of the container.
+// If the object can not be retrieved, it panics.
+func (c *Container) UnscopedGetApiMiddlewares() *middlewares.AuthRoutes {
+	o, err := c.UnscopedSafeGetApiMiddlewares()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// ApiMiddlewares retrieves the "api_middlewares" object from the main scope.
+//
+// ---------------------------------------------
+// 	name: "api_middlewares"
+// 	type: *middlewares.AuthRoutes
+// 	scope: "main"
+// 	build: func
+// 	params:
+// 		- "0": Service(*user.PersistenceUser) ["mysql_user_persistence"]
+// 	unshared: false
+// 	close: false
+// ---------------------------------------------
+//
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it calls the GetApiMiddlewares method.
+// If the container can not be retrieved, it panics.
+func ApiMiddlewares(i interface{}) *middlewares.AuthRoutes {
+	return C(i).GetApiMiddlewares()
+}
+
+// SafeGetApiToken retrieves the "api_token" object from the main scope.
+//
+// ---------------------------------------------
+// 	name: "api_token"
+// 	type: *token1.APIToken
+// 	scope: "main"
+// 	build: func
+// 	params:
+// 		- "0": Service(*token.BusinessToken) ["business_token"]
+// 	unshared: false
+// 	close: false
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it returns an error.
+func (c *Container) SafeGetApiToken() (*token1.APIToken, error) {
+	i, err := c.ctn.SafeGet("api_token")
+	if err != nil {
+		var eo *token1.APIToken
+		return eo, err
+	}
+	o, ok := i.(*token1.APIToken)
+	if !ok {
+		return o, errors.New("could get 'api_token' because the object could not be cast to *token1.APIToken")
+	}
+	return o, nil
+}
+
+// GetApiToken retrieves the "api_token" object from the main scope.
+//
+// ---------------------------------------------
+// 	name: "api_token"
+// 	type: *token1.APIToken
+// 	scope: "main"
+// 	build: func
+// 	params:
+// 		- "0": Service(*token.BusinessToken) ["business_token"]
+// 	unshared: false
+// 	close: false
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it panics.
+func (c *Container) GetApiToken() *token1.APIToken {
+	o, err := c.SafeGetApiToken()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetApiToken retrieves the "api_token" object from the main scope.
+//
+// ---------------------------------------------
+// 	name: "api_token"
+// 	type: *token1.APIToken
+// 	scope: "main"
+// 	build: func
+// 	params:
+// 		- "0": Service(*token.BusinessToken) ["business_token"]
+// 	unshared: false
+// 	close: false
+// ---------------------------------------------
+//
+// This method can be called even if main is a sub-scope of the container.
+// If the object can not be retrieved, it returns an error.
+func (c *Container) UnscopedSafeGetApiToken() (*token1.APIToken, error) {
+	i, err := c.ctn.UnscopedSafeGet("api_token")
+	if err != nil {
+		var eo *token1.APIToken
+		return eo, err
+	}
+	o, ok := i.(*token1.APIToken)
+	if !ok {
+		return o, errors.New("could get 'api_token' because the object could not be cast to *token1.APIToken")
+	}
+	return o, nil
+}
+
+// UnscopedGetApiToken retrieves the "api_token" object from the main scope.
+//
+// ---------------------------------------------
+// 	name: "api_token"
+// 	type: *token1.APIToken
+// 	scope: "main"
+// 	build: func
+// 	params:
+// 		- "0": Service(*token.BusinessToken) ["business_token"]
+// 	unshared: false
+// 	close: false
+// ---------------------------------------------
+//
+// This method can be called even if main is a sub-scope of the container.
+// If the object can not be retrieved, it panics.
+func (c *Container) UnscopedGetApiToken() *token1.APIToken {
+	o, err := c.UnscopedSafeGetApiToken()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// ApiToken retrieves the "api_token" object from the main scope.
+//
+// ---------------------------------------------
+// 	name: "api_token"
+// 	type: *token1.APIToken
+// 	scope: "main"
+// 	build: func
+// 	params:
+// 		- "0": Service(*token.BusinessToken) ["business_token"]
+// 	unshared: false
+// 	close: false
+// ---------------------------------------------
+//
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it calls the GetApiToken method.
+// If the container can not be retrieved, it panics.
+func ApiToken(i interface{}) *token1.APIToken {
+	return C(i).GetApiToken()
+}
+
+// SafeGetBusinessToken retrieves the "business_token" object from the main scope.
+//
+// ---------------------------------------------
+// 	name: "business_token"
+// 	type: *token.BusinessToken
+// 	scope: "main"
+// 	build: func
+// 	params:
+// 		- "0": Service(*config.Config) ["config"]
+// 		- "1": Service(*token2.PersistenceToken) ["mysql_token_persistence"]
+// 	unshared: false
+// 	close: false
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it returns an error.
+func (c *Container) SafeGetBusinessToken() (*token.BusinessToken, error) {
+	i, err := c.ctn.SafeGet("business_token")
+	if err != nil {
+		var eo *token.BusinessToken
+		return eo, err
+	}
+	o, ok := i.(*token.BusinessToken)
+	if !ok {
+		return o, errors.New("could get 'business_token' because the object could not be cast to *token.BusinessToken")
 	}
 	return o, nil
 }
@@ -251,18 +493,18 @@ func (c *Container) SafeGetBusinessToken() (*token1.BusinessToken, error) {
 //
 // ---------------------------------------------
 // 	name: "business_token"
-// 	type: *token1.BusinessToken
+// 	type: *token.BusinessToken
 // 	scope: "main"
 // 	build: func
 // 	params:
 // 		- "0": Service(*config.Config) ["config"]
-// 		- "1": Service(*token.PersistenceToken) ["mysql_token_persistence"]
+// 		- "1": Service(*token2.PersistenceToken) ["mysql_token_persistence"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
 //
 // If the object can not be retrieved, it panics.
-func (c *Container) GetBusinessToken() *token1.BusinessToken {
+func (c *Container) GetBusinessToken() *token.BusinessToken {
 	o, err := c.SafeGetBusinessToken()
 	if err != nil {
 		panic(err)
@@ -274,27 +516,27 @@ func (c *Container) GetBusinessToken() *token1.BusinessToken {
 //
 // ---------------------------------------------
 // 	name: "business_token"
-// 	type: *token1.BusinessToken
+// 	type: *token.BusinessToken
 // 	scope: "main"
 // 	build: func
 // 	params:
 // 		- "0": Service(*config.Config) ["config"]
-// 		- "1": Service(*token.PersistenceToken) ["mysql_token_persistence"]
+// 		- "1": Service(*token2.PersistenceToken) ["mysql_token_persistence"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
 //
 // This method can be called even if main is a sub-scope of the container.
 // If the object can not be retrieved, it returns an error.
-func (c *Container) UnscopedSafeGetBusinessToken() (*token1.BusinessToken, error) {
+func (c *Container) UnscopedSafeGetBusinessToken() (*token.BusinessToken, error) {
 	i, err := c.ctn.UnscopedSafeGet("business_token")
 	if err != nil {
-		var eo *token1.BusinessToken
+		var eo *token.BusinessToken
 		return eo, err
 	}
-	o, ok := i.(*token1.BusinessToken)
+	o, ok := i.(*token.BusinessToken)
 	if !ok {
-		return o, errors.New("could get 'business_token' because the object could not be cast to *token1.BusinessToken")
+		return o, errors.New("could get 'business_token' because the object could not be cast to *token.BusinessToken")
 	}
 	return o, nil
 }
@@ -303,19 +545,19 @@ func (c *Container) UnscopedSafeGetBusinessToken() (*token1.BusinessToken, error
 //
 // ---------------------------------------------
 // 	name: "business_token"
-// 	type: *token1.BusinessToken
+// 	type: *token.BusinessToken
 // 	scope: "main"
 // 	build: func
 // 	params:
 // 		- "0": Service(*config.Config) ["config"]
-// 		- "1": Service(*token.PersistenceToken) ["mysql_token_persistence"]
+// 		- "1": Service(*token2.PersistenceToken) ["mysql_token_persistence"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
 //
 // This method can be called even if main is a sub-scope of the container.
 // If the object can not be retrieved, it panics.
-func (c *Container) UnscopedGetBusinessToken() *token1.BusinessToken {
+func (c *Container) UnscopedGetBusinessToken() *token.BusinessToken {
 	o, err := c.UnscopedSafeGetBusinessToken()
 	if err != nil {
 		panic(err)
@@ -327,12 +569,12 @@ func (c *Container) UnscopedGetBusinessToken() *token1.BusinessToken {
 //
 // ---------------------------------------------
 // 	name: "business_token"
-// 	type: *token1.BusinessToken
+// 	type: *token.BusinessToken
 // 	scope: "main"
 // 	build: func
 // 	params:
 // 		- "0": Service(*config.Config) ["config"]
-// 		- "1": Service(*token.PersistenceToken) ["mysql_token_persistence"]
+// 		- "1": Service(*token2.PersistenceToken) ["mysql_token_persistence"]
 // 	unshared: false
 // 	close: false
 // ---------------------------------------------
@@ -340,7 +582,7 @@ func (c *Container) UnscopedGetBusinessToken() *token1.BusinessToken {
 // It tries to find the container with the C method and the given interface.
 // If the container can be retrieved, it calls the GetBusinessToken method.
 // If the container can not be retrieved, it panics.
-func BusinessToken(i interface{}) *token1.BusinessToken {
+func BusinessToken(i interface{}) *token.BusinessToken {
 	return C(i).GetBusinessToken()
 }
 
@@ -583,7 +825,7 @@ func MysqlConnection(i interface{}) *mysql.MYSQLConnection {
 //
 // ---------------------------------------------
 // 	name: "mysql_token_persistence"
-// 	type: *token.PersistenceToken
+// 	type: *token2.PersistenceToken
 // 	scope: "main"
 // 	build: func
 // 	params:
@@ -593,15 +835,15 @@ func MysqlConnection(i interface{}) *mysql.MYSQLConnection {
 // ---------------------------------------------
 //
 // If the object can not be retrieved, it returns an error.
-func (c *Container) SafeGetMysqlTokenPersistence() (*token.PersistenceToken, error) {
+func (c *Container) SafeGetMysqlTokenPersistence() (*token2.PersistenceToken, error) {
 	i, err := c.ctn.SafeGet("mysql_token_persistence")
 	if err != nil {
-		var eo *token.PersistenceToken
+		var eo *token2.PersistenceToken
 		return eo, err
 	}
-	o, ok := i.(*token.PersistenceToken)
+	o, ok := i.(*token2.PersistenceToken)
 	if !ok {
-		return o, errors.New("could get 'mysql_token_persistence' because the object could not be cast to *token.PersistenceToken")
+		return o, errors.New("could get 'mysql_token_persistence' because the object could not be cast to *token2.PersistenceToken")
 	}
 	return o, nil
 }
@@ -610,7 +852,7 @@ func (c *Container) SafeGetMysqlTokenPersistence() (*token.PersistenceToken, err
 //
 // ---------------------------------------------
 // 	name: "mysql_token_persistence"
-// 	type: *token.PersistenceToken
+// 	type: *token2.PersistenceToken
 // 	scope: "main"
 // 	build: func
 // 	params:
@@ -620,7 +862,7 @@ func (c *Container) SafeGetMysqlTokenPersistence() (*token.PersistenceToken, err
 // ---------------------------------------------
 //
 // If the object can not be retrieved, it panics.
-func (c *Container) GetMysqlTokenPersistence() *token.PersistenceToken {
+func (c *Container) GetMysqlTokenPersistence() *token2.PersistenceToken {
 	o, err := c.SafeGetMysqlTokenPersistence()
 	if err != nil {
 		panic(err)
@@ -632,7 +874,7 @@ func (c *Container) GetMysqlTokenPersistence() *token.PersistenceToken {
 //
 // ---------------------------------------------
 // 	name: "mysql_token_persistence"
-// 	type: *token.PersistenceToken
+// 	type: *token2.PersistenceToken
 // 	scope: "main"
 // 	build: func
 // 	params:
@@ -643,15 +885,15 @@ func (c *Container) GetMysqlTokenPersistence() *token.PersistenceToken {
 //
 // This method can be called even if main is a sub-scope of the container.
 // If the object can not be retrieved, it returns an error.
-func (c *Container) UnscopedSafeGetMysqlTokenPersistence() (*token.PersistenceToken, error) {
+func (c *Container) UnscopedSafeGetMysqlTokenPersistence() (*token2.PersistenceToken, error) {
 	i, err := c.ctn.UnscopedSafeGet("mysql_token_persistence")
 	if err != nil {
-		var eo *token.PersistenceToken
+		var eo *token2.PersistenceToken
 		return eo, err
 	}
-	o, ok := i.(*token.PersistenceToken)
+	o, ok := i.(*token2.PersistenceToken)
 	if !ok {
-		return o, errors.New("could get 'mysql_token_persistence' because the object could not be cast to *token.PersistenceToken")
+		return o, errors.New("could get 'mysql_token_persistence' because the object could not be cast to *token2.PersistenceToken")
 	}
 	return o, nil
 }
@@ -660,7 +902,7 @@ func (c *Container) UnscopedSafeGetMysqlTokenPersistence() (*token.PersistenceTo
 //
 // ---------------------------------------------
 // 	name: "mysql_token_persistence"
-// 	type: *token.PersistenceToken
+// 	type: *token2.PersistenceToken
 // 	scope: "main"
 // 	build: func
 // 	params:
@@ -671,7 +913,7 @@ func (c *Container) UnscopedSafeGetMysqlTokenPersistence() (*token.PersistenceTo
 //
 // This method can be called even if main is a sub-scope of the container.
 // If the object can not be retrieved, it panics.
-func (c *Container) UnscopedGetMysqlTokenPersistence() *token.PersistenceToken {
+func (c *Container) UnscopedGetMysqlTokenPersistence() *token2.PersistenceToken {
 	o, err := c.UnscopedSafeGetMysqlTokenPersistence()
 	if err != nil {
 		panic(err)
@@ -683,7 +925,7 @@ func (c *Container) UnscopedGetMysqlTokenPersistence() *token.PersistenceToken {
 //
 // ---------------------------------------------
 // 	name: "mysql_token_persistence"
-// 	type: *token.PersistenceToken
+// 	type: *token2.PersistenceToken
 // 	scope: "main"
 // 	build: func
 // 	params:
@@ -695,7 +937,7 @@ func (c *Container) UnscopedGetMysqlTokenPersistence() *token.PersistenceToken {
 // It tries to find the container with the C method and the given interface.
 // If the container can be retrieved, it calls the GetMysqlTokenPersistence method.
 // If the container can not be retrieved, it panics.
-func MysqlTokenPersistence(i interface{}) *token.PersistenceToken {
+func MysqlTokenPersistence(i interface{}) *token2.PersistenceToken {
 	return C(i).GetMysqlTokenPersistence()
 }
 

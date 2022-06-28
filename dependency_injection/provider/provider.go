@@ -16,6 +16,7 @@ func getServices() (*[]dingo.Def, error) {
 	services = append(services, *getConfigLayers()...)
 	services = append(services, *getBusinessLayers()...)
 	services = append(services, *getPersistenceLayers()...)
+	services = append(services, *getAPILayers()...)
 
 	return &services, nil
 }

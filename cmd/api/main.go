@@ -18,6 +18,14 @@ import (
 	"syscall"
 )
 
+// AddContainerInstance injects our dependencies to our fiber context
+func addContainerInstance(container *dic.Container) func(ctx *fiber.Ctx) error {
+	return func(ctx *fiber.Ctx) error {
+		ctx.Locals(helpers.Dependencies, container)
+		return ctx.Next()
+	}
+}
+
 // initAPI boots our REST API connections
 func initAPI(ctn *dic.Container, cfg *config.Config) {
 	app := fiber.New(fiber.Config{
@@ -25,7 +33,7 @@ func initAPI(ctn *dic.Container, cfg *config.Config) {
 	})
 
 	app.Use(requestid.New())
-	app.Use(helpers.AddContainerInstance(ctn))
+	// app.Use(addContainerInstance(ctn))
 	app.Use(recover.New())
 	app.Use(cors.New())
 	app.Use(logger.New(logger.Config{

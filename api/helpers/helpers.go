@@ -2,29 +2,19 @@ package helpers
 
 import (
 	"errors"
-	"github.com/dembygenesis/platform_engineer_exam/dependency_injection/dic"
-	"github.com/gofiber/fiber/v2"
 )
 
 var (
 	ErrNoContainerFound = errors.New("no container found in the fiber context provided")
 )
 
-func GetContainer(ctx *fiber.Ctx) (*dic.Container, error) {
+/*func GetContainer(ctx *fiber.Ctx) (*dic.Container, error) {
 	ctn, ok := ctx.Locals(Dependencies).(*dic.Container)
 	if !ok {
 		return nil, ErrNoContainerFound
 	}
 	return ctn, nil
-}
-
-// AddContainerInstance injects our dependencies to our fiber context
-func AddContainerInstance(container *dic.Container) func(ctx *fiber.Ctx) error {
-	return func(ctx *fiber.Ctx) error {
-		ctx.Locals(Dependencies, container)
-		return ctx.Next()
-	}
-}
+}*/
 
 func WrapStrInErrMap(str string) map[string][]string {
 	w := make(map[string][]string)

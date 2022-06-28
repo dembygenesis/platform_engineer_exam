@@ -1,9 +1,7 @@
 package middlewares
 
 import (
-	"context"
 	"github.com/dembygenesis/platform_engineer_exam/api/helpers"
-	"github.com/dembygenesis/platform_engineer_exam/dependency_injection/dic"
 	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/dembygenesis/platform_engineer_exam/src/utils/common"
 	"github.com/gofiber/fiber/v2"
@@ -18,13 +16,24 @@ const (
 	UserMetaKey = "userMeta"
 )
 
+type authFunctions interface {
+	BasicAuth(user, pass string) (bool, *models.User, error)
+}
+
+type AuthRoutes struct {
+	authData authFunctions
+}
+
+func NewAuthRoutes(authData authFunctions) *AuthRoutes {
+	return &AuthRoutes{authData}
+}
+
 // ProtectedRoute guards a route using the "Basic Auth" protocol
-func ProtectedRoute(ctn *dic.Container) func(ctx *fiber.Ctx) error {
-	userPersistence := ctn.GetMysqlUserPersistence()
+func (a *AuthRoutes) ProtectedRoute() func(ctx *fiber.Ctx) error {
 
 	return basicauth.New(basicauth.Config{
 		Authorizer: func(user, pass string) bool {
-			matched, _, err := userPersistence.BasicAuth(user, pass)
+			matched, _, err := a.authData.BasicAuth(user, pass)
 			if err != nil {
 				return false
 			}
@@ -45,22 +54,12 @@ func ProtectedRoute(ctn *dic.Container) func(ctx *fiber.Ctx) error {
 	})
 }
 
-func Extract(ctx context.Context) error {
-	return nil
-}
-
-func AttachUserMeta(ctx *fiber.Ctx) error {
-	ctn, err := helpers.GetContainer(ctx)
-	if err != nil {
-		return err
-	}
+func (a *AuthRoutes) AttachUserMeta(ctx *fiber.Ctx) error {
 	logger := common.GetLogger(ctx.Context())
-	userPersistence := ctn.GetMysqlUserPersistence()
-
 	user := ctx.Locals(userKey).(string)
 	pass := ctx.Locals(passKey).(string)
 
-	_, userMeta, err := userPersistence.BasicAuth(user, pass)
+	_, userMeta, err := a.authData.BasicAuth(user, pass)
 	if err != nil {
 		logger.WithFields(logrus.Fields{
 			"err": err,
@@ -68,7 +67,7 @@ func AttachUserMeta(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusUnauthorized).JSON(helpers.WrapErrInErrMap(err))
 	}
 	ctx.Locals(UserMetaKey, &models.User{
-		Id: userMeta.ID,
+		Id: userMeta.Id,
 	})
 	return ctx.Next()
 }

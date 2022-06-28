@@ -1,11 +1,27 @@
 package token
 
 import (
+	"context"
 	"github.com/dembygenesis/platform_engineer_exam/api/helpers"
 	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
 )
+
+type bizFunctions interface {
+	Validate(ctx context.Context, key string) error
+	GetAll(ctx context.Context) ([]models.Token, error)
+	Revoke(ctx context.Context, key string) error
+	Generate(ctx context.Context, user *models.User) (string, error)
+}
+
+type APIToken struct {
+	bizLayer bizFunctions
+}
+
+func NewAPIToken(bizLayer bizFunctions) *APIToken {
+	return &APIToken{bizLayer}
+}
 
 // ValidateToken
 // @Id ValidateToken
@@ -19,23 +35,13 @@ import (
 // @Failure 400 {object} models.AuthFailBadRequest
 // @Failure 500 {object} models.AuthFailInternalServerError
 // @Router /v0/token/{token}/validate [get]
-func ValidateToken(ctx *fiber.Ctx) error {
+func (t *APIToken) ValidateToken(ctx *fiber.Ctx) error {
 	token := ctx.Params("token")
 	if token == "" {
 		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapStrInErrMap("token is missing"))
 	}
 
-	ctn, err := helpers.GetContainer(ctx)
-	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
-	}
-
-	biz, err := ctn.SafeGetBusinessToken()
-	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
-	}
-
-	err = biz.Validate(ctx.Context(), token)
+	err := t.bizLayer.Validate(ctx.Context(), token)
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
@@ -54,21 +60,11 @@ func ValidateToken(ctx *fiber.Ctx) error {
 // @Failure 500 {object} models.AuthFailInternalServerError
 // @Security BasicAuth
 // @Router /v0/token [get]
-func GetAll(ctx *fiber.Ctx) error {
-	ctn, err := helpers.GetContainer(ctx)
+func (t *APIToken) GetAll(ctx *fiber.Ctx) error {
+	tokens, err := t.bizLayer.GetAll(ctx.Context())
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
-	biz, err := ctn.SafeGetBusinessToken()
-	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
-	}
-
-	tokens, err := biz.GetAll(ctx.Context())
-	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
-	}
-
 	return ctx.Status(http.StatusCreated).JSON(tokens)
 }
 
@@ -85,26 +81,16 @@ func GetAll(ctx *fiber.Ctx) error {
 // @Failure 500 {object} models.AuthFailInternalServerError
 // @Security BasicAuth
 // @Router /v0/token/{token}/revoke [delete]
-func Revoke(ctx *fiber.Ctx) error {
+func (t *APIToken) Revoke(ctx *fiber.Ctx) error {
 	token := ctx.Params("token")
 	if token == "" {
 		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapStrInErrMap("token is missing"))
 	}
 
-	ctn, err := helpers.GetContainer(ctx)
+	err := t.bizLayer.Revoke(ctx.Context(), token)
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
-	biz, err := ctn.SafeGetBusinessToken()
-	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
-	}
-
-	err = biz.Revoke(ctx.Context(), token)
-	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
-	}
-
 	return ctx.Status(http.StatusOK).SendString("Revoked token access!")
 }
 
@@ -120,25 +106,15 @@ func Revoke(ctx *fiber.Ctx) error {
 // @Failure 500 {object} models.AuthFailInternalServerError
 // @Security BasicAuth
 // @Router /v0/token [post]
-func GetToken(ctx *fiber.Ctx) error {
-	ctn, err := helpers.GetContainer(ctx)
-	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
-	}
-	biz, err := ctn.SafeGetBusinessToken()
-	if err != nil {
-		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
-	}
-
+func (t *APIToken) GetToken(ctx *fiber.Ctx) error {
 	userMeta, ok := ctx.Locals("userMeta").(*models.User)
 	if !ok {
 		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapStrInErrMap("userMeta conversion fails"))
 	}
 
-	generatedToken, err := biz.Generate(ctx.Context(), userMeta)
+	generatedToken, err := t.bizLayer.Generate(ctx.Context(), userMeta)
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
-
 	return ctx.Status(http.StatusCreated).JSON(generatedToken)
 }
