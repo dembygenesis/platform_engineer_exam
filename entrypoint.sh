@@ -4,5 +4,5 @@ echo "#######################"
 printenv
 echo "#######################"
 
-populate_admin
-api_server
+/usr/bin/populate_admin
+/usr/bin/api_server
