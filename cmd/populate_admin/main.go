@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/dembygenesis/platform_engineer_exam/dependency_injection/dic"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/models_schema"
@@ -47,7 +46,6 @@ func main() {
 	}
 
 	logger.WithFields(logrus.Fields{
-		msg: "Successfully added a new admin user",
 		email:    "admin@gmail.com",
 		password: "123456",
 	}).Info("add_admin_user")
