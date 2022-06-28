@@ -36,6 +36,8 @@ services:
       - db
     volumes:
       - .:/app/
+    environment:
+      DB_HOST: db
 
 networks:
   default:

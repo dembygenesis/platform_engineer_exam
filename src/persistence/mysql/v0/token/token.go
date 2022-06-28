@@ -85,7 +85,7 @@ func (p *PersistenceToken) GetToken(ctx context.Context, key string) (*models.To
 
 // GetAll returns all the tokens
 func (p *PersistenceToken) GetAll(ctx context.Context) ([]models.Token, error) {
-	var container []models.Token
+	container := []models.Token{}
 	err := models_schema.Tokens(
 		qm.InnerJoin("user u ON u.id = token.created_by"),
 		qm.Select([]string{
@@ -101,7 +101,6 @@ func (p *PersistenceToken) GetAll(ctx context.Context) ([]models.Token, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, errFetchTokens.Error())
 	}
-
 	return container, nil
 }
 

@@ -1,23 +1,20 @@
 package main
 
-/**
-This command inserts a new dummy user to the app with creds:
-email: admin@gmail.com
-pass:  123456
-*/
-
 import (
-	"fmt"
+	"context"
 	"github.com/dembygenesis/platform_engineer_exam/dependency_injection/dic"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/models_schema"
+	"github.com/dembygenesis/platform_engineer_exam/src/utils/common"
 	"github.com/dembygenesis/platform_engineer_exam/src/utils/strings"
+	"github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 )
 
 func main() {
+	logger := common.GetLogger(context.Background())
 	builder, err := dic.NewBuilder()
 	if err != nil {
 		log.Fatalf("error trying to initialize the builder: %v", err.Error())
@@ -33,13 +30,9 @@ func main() {
 	unhashedPassword := "123456"
 	password, _ := strings.Encrypt(unhashedPassword)
 
-	err = bcrypt.CompareHashAndPassword([]byte(password), []byte(unhashedPassword))
-	/*err = bcrypt.CompareHashAndPassword([]byte("$2a$10$U7Gu/i.MpomFEuGNPq/.OeyUiIEhNpTTinot/eWFO9UuK58weGp02"), []byte("123456"))
-	if err != nil {
-		panic("GG  no match")
-	} else {
-		panic("Match with len: " + strconv.Itoa(len(password)))
-	}*/
+	if err = bcrypt.CompareHashAndPassword([]byte(password), []byte(unhashedPassword)); err != nil {
+		log.Fatalf("Failed to synchronize passwords: %v", err)
+	}
 
 	newUser := models_schema.User{
 		Name:     name,
@@ -50,8 +43,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("error inserting a dummy admin user: %v", err.Error())
 	}
-	fmt.Println("Successfully added a new admin with credentials of", map[string]string{
+	logger.WithFields(logrus.Fields{
 		email:    "admin@gmamil.com",
 		password: "123456",
 	})
+
+	/*fmt.Println("Successfully added a new admin with credentials of", map[string]string{
+		email:    "admin@gmamil.com",
+		password: "123456",
+	})*/
 }

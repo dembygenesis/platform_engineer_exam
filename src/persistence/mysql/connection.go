@@ -33,7 +33,6 @@ func (c *MYSQLConnection) Ping() error {
 
 // NewMYSQLConnection returns a struct with a mysql instance
 func NewMYSQLConnection(c config.DatabaseCredentials) (*MYSQLConnection, error) {
-
 	conn := MYSQLConnection{}
 	connString := c.User + ":" +
 		c.Pass + "@tcp(" +
