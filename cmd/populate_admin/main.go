@@ -7,6 +7,7 @@ import (
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/models_schema"
 	"github.com/dembygenesis/platform_engineer_exam/src/utils/common"
 	"github.com/dembygenesis/platform_engineer_exam/src/utils/strings"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/crypto/bcrypt"
