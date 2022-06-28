@@ -8,14 +8,16 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o main ./cmd/api/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o api_server ./cmd/api/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o populate_admin ./cmd/populate_admin/main.go
 
 # Minimize using busybox
 FROM busybox
 
 WORKDIR /app
 
-COPY --from=builder /app/main /usr/bin/
+COPY --from=builder /app/api_server /usr/bin/
+COPY --from=builder /app/populate_admin /usr/bin/
 COPY --from=builder /app/.env /app
 
 # Add script to wait for MYSQL to finish first before booting (crucial)

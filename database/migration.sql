@@ -23,7 +23,7 @@ CREATE TABLE `token` (
   UNIQUE KEY `token_name_uindex` (`key`),
   KEY `token_user_id_fk` (`created_by`),
   CONSTRAINT `token_user_id_fk` FOREIGN KEY (`created_by`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+);
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -37,7 +37,7 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_email_uindex` (`email`),
   UNIQUE KEY `user_name_uindex` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+);
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -49,7 +49,7 @@ CREATE TABLE `user` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
-INSERT INTO `user` (name, email, password)
-VALUES ('Admin',
-        'admin@gmail.com',
-        '$2a$10$U7Gu/i.MpomFEuGNPq/.OeyUiIEhNpTTinot/eWFO9UuK58weGp02');
+-- INSERT INTO `user` (name, email, password)
+-- VALUES ('Admin',
+--         'admin@gmail.com',
+--         '$2a$10$U7Gu/i.MpomFEuGNPq/.OeyUiIEhNpTTinot/eWFO9UuK58weGp02');
