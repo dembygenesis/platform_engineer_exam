@@ -1,12 +1,10 @@
 package middlewares
 
 import (
-	"bytes"
 	"encoding/json"
 	"github.com/dembygenesis/platform_engineer_exam/api/helpers"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"sync"
@@ -38,18 +36,15 @@ func TestValidate_Throttle(t *testing.T) {
 				resp, err := app.Test(req, 1)
 				require.NoError(t, err)
 
-				readBody, err := ioutil.ReadAll(resp.Body)
+				respBodyStringified, err := helpers.ResponseBodyToString(resp.Body)
 				require.NoError(t, err)
 
 				err = resp.Body.Close()
 				require.NoError(t, err)
 
-				resp.Body = ioutil.NopCloser(bytes.NewReader(readBody))
-				respStr := string(readBody)
-
 				if resp.StatusCode == http.StatusForbidden {
 					var errorRespExpected map[string][]string
-					err = json.Unmarshal([]byte(respStr), &errorRespExpected)
+					err = json.Unmarshal([]byte(respBodyStringified), &errorRespExpected)
 					require.NoError(t, err)
 
 					require.Equal(t, helpers.WrapErrInErrMap(ErrThrottleLimitExceeded), errorRespExpected)

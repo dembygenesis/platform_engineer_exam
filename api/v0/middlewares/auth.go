@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"github.com/dembygenesis/platform_engineer_exam/api/helpers"
 	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/dembygenesis/platform_engineer_exam/src/utils/common"
@@ -16,6 +17,7 @@ const (
 	UserMetaKey = "userMeta"
 )
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . authFunctions
 type authFunctions interface {
 	BasicAuth(user, pass string) (bool, *models.User, error)
 }
@@ -43,6 +45,10 @@ func (a *AuthRoutes) ProtectedRoute() func(ctx *fiber.Ctx) error {
 			return true
 		},
 		Unauthorized: func(ctx *fiber.Ctx) error {
+
+			reqHeaders := ctx.GetReqHeaders()
+			fmt.Println("reqHeaders reqHeaders reqHeaders", reqHeaders)
+
 			logger := common.GetLogger(ctx.Context())
 			logger.WithFields(logrus.Fields{
 				"msg": "Unauthorized",
