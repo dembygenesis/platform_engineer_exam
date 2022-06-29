@@ -1,8 +1,6 @@
 package config
 
 import (
-	"fmt"
-	strings2 "github.com/dembygenesis/platform_engineer_exam/src/utils/strings"
 	"github.com/dembygenesis/platform_engineer_exam/src/utils/validation"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -84,8 +82,6 @@ func NewConfig(configFile string) (*Config, error) {
 				errReturnedFromParamValidation.Error())
 		}
 	}
-
-	fmt.Println(strings2.GetJSON(config))
 
 	return config, nil
 }

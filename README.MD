@@ -6,15 +6,15 @@
 3. TCP Port **3337** is free
 
 ### Boot Instructions
-1. sh start.sh
-2. Basic auth creds:
-   1. Username: "admin@gmail.com"
-   2. Password: "123456"
+1. **sh start.sh**
+2. Basic auth creds (attach to your postman requests, but the UI served attaches these auth protocol in axios interceptors):
+   1. Username: **admin@gmail.com**
+   2. Password: **123456**
 
 ### Some Notes
 1. I did not use for loops for my test code deviating from how it's usually done, because the mock libraries I am using to test won't be easily readable if I go that route
-2. I also served a UI from: http://localhost:8081
-3. Docs is served from: http://localhost:8081/docs
+2. I also served a UI from: [http://localhost:8081](http://localhost:8081)
+3. Docs is served from: [http://localhost:8081/docs](http://localhost:8081/docs)
 4. Architecture followed is dependency injection
 5. Notable libraries used:
    1. [Fiber](https://github.com/gofiber/fiber) - Multiplexer
