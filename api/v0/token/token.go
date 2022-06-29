@@ -22,6 +22,7 @@ var (
 	errMockGetAll   = errors.New("error, mock GetAll")
 	errMockRevoke   = errors.New("error, mock Revoke")
 	errMockValidate = errors.New("error, mock Validate")
+	errMockGenerate = errors.New("error, mock Generate")
 )
 
 type APIToken struct {

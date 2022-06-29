@@ -1,14 +1,70 @@
 package token
 
 import (
-	"context"
 	"github.com/dembygenesis/platform_engineer_exam/api/v0/token/tokenfakes"
+	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
+
+func TestGetToken_StatusCreated(t *testing.T) {
+	fakeBizFunctions := &tokenfakes.FakeBizFunctions{}
+	fakeBizFunctions.GenerateReturns("12345", nil)
+
+	apiToken := NewAPIToken(fakeBizFunctions)
+
+	app := fiber.New()
+	app.Post("/", func(ctx *fiber.Ctx) error {
+		ctx.Locals("userMeta", &models.User{Id: 1})
+		return ctx.Next()
+	}, apiToken.GetToken)
+
+	req := httptest.NewRequest("POST", "/", nil)
+
+	resp, _ := app.Test(req, 1)
+	t.Run("Test Validate - StatusCreated", func(t *testing.T) {
+		assert.Equal(t, http.StatusCreated, resp.StatusCode)
+	})
+}
+
+func TestGetToken_InternalServerError_GenerateFails(t *testing.T) {
+	fakeBizFunctions := &tokenfakes.FakeBizFunctions{}
+	fakeBizFunctions.GenerateReturns("", errMockGenerate)
+
+	apiToken := NewAPIToken(fakeBizFunctions)
+
+	app := fiber.New()
+	app.Post("/", func(ctx *fiber.Ctx) error {
+		ctx.Locals("userMeta", &models.User{Id: 1})
+		return ctx.Next()
+	}, apiToken.GetToken)
+
+	req := httptest.NewRequest("POST", "/", nil)
+
+	resp, _ := app.Test(req, 1)
+	t.Run("Test Validate - Internal Server Error", func(t *testing.T) {
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	})
+}
+
+func TestGetToken_InternalServerError_UserMetaFails(t *testing.T) {
+	fakeBizFunctions := &tokenfakes.FakeBizFunctions{}
+
+	apiToken := NewAPIToken(fakeBizFunctions)
+
+	app := fiber.New()
+	app.Get("/", apiToken.GetToken)
+
+	req := httptest.NewRequest("GET", "/", nil)
+
+	resp, _ := app.Test(req, 1)
+	t.Run("Test Validate - Internal Server Error", func(t *testing.T) {
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	})
+}
 
 func TestValidate_StatusOk(t *testing.T) {
 	fakeBizFunctions := &tokenfakes.FakeBizFunctions{}
@@ -20,9 +76,6 @@ func TestValidate_StatusOk(t *testing.T) {
 	app.Get("/:token/validate", apiToken.ValidateToken)
 
 	req := httptest.NewRequest("GET", "/mock_token_value/validate", nil)
-
-	ctx := context.Background()
-	req.WithContext(context.WithValue(ctx, "token", "12345"))
 
 	resp, _ := app.Test(req, 1)
 	t.Run("Test Validate - StatusOk", func(t *testing.T) {
@@ -41,9 +94,6 @@ func TestValidate_InternalServerError(t *testing.T) {
 
 	req := httptest.NewRequest("GET", "/mock_token_value/validate", nil)
 
-	ctx := context.Background()
-	req.WithContext(context.WithValue(ctx, "token", "12345"))
-
 	resp, _ := app.Test(req, 1)
 	t.Run("Test Validate - Internal Server Error", func(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
@@ -57,12 +107,9 @@ func TestRevoke_StatusOk(t *testing.T) {
 	apiToken := NewAPIToken(fakeBizFunctions)
 
 	app := fiber.New()
-	app.Get("/:token/revoke", apiToken.Revoke)
+	app.Delete("/:token/revoke", apiToken.Revoke)
 
-	req := httptest.NewRequest("GET", "/mock_token_value/revoke", nil)
-
-	ctx := context.Background()
-	req.WithContext(context.WithValue(ctx, "token", "12345"))
+	req := httptest.NewRequest("DELETE", "/mock_token_value/revoke", nil)
 
 	resp, _ := app.Test(req, 1)
 	t.Run("Test GetAll - StatusOk", func(t *testing.T) {
@@ -77,12 +124,9 @@ func TestRevoke_InternalServerError(t *testing.T) {
 	apiToken := NewAPIToken(fakeBizFunctions)
 
 	app := fiber.New()
-	app.Get("/:token/revoke", apiToken.Revoke)
+	app.Delete("/:token/revoke", apiToken.Revoke)
 
-	req := httptest.NewRequest("GET", "/mock_token_value/revoke", nil)
-
-	ctx := context.Background()
-	req.WithContext(context.WithValue(ctx, "token", "12345"))
+	req := httptest.NewRequest("DELETE", "/mock_token_value/revoke", nil)
 
 	resp, _ := app.Test(req, 1)
 	t.Run("Test GetAll - Internal Server Error", func(t *testing.T) {
