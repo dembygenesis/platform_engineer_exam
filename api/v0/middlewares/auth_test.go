@@ -65,3 +65,45 @@ func TestProtectedRoute_FailPath_NoMatch(t *testing.T) {
 		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 	})
 }
+
+func TestAuthRoutes_AttachUserMeta_HappyPath(t *testing.T) {
+	fakeAuthFunctions := middlewaresfakes.FakeAuthFunctions{}
+	fakeAuthFunctions.BasicAuthReturns(false, &models.User{Id: 3}, nil)
+
+	authRoutes := NewAuthRoutes(&fakeAuthFunctions)
+
+	app := fiber.New()
+	app.Get("/", func(ctx *fiber.Ctx) error {
+		ctx.Locals(userKey, "abc")
+		ctx.Locals(passKey, "abc")
+		return ctx.Next()
+	}, authRoutes.AttachUserMeta)
+
+	req := httptest.NewRequest("GET", "/", nil)
+
+	resp, _ := app.Test(req, 1)
+	t.Run("Test AuthRoutes - Happy Path", func(t *testing.T) {
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	})
+}
+
+func TestAuthRoutes_AttachUserMeta_Fail_ErrorBasicAuth(t *testing.T) {
+	fakeAuthFunctions := middlewaresfakes.FakeAuthFunctions{}
+	fakeAuthFunctions.BasicAuthReturns(false, &models.User{Id: 3}, errors.New("mock error"))
+
+	authRoutes := NewAuthRoutes(&fakeAuthFunctions)
+
+	app := fiber.New()
+	app.Get("/", func(ctx *fiber.Ctx) error {
+		ctx.Locals(userKey, "abc")
+		ctx.Locals(passKey, "abc")
+		return ctx.Next()
+	}, authRoutes.AttachUserMeta)
+
+	req := httptest.NewRequest("GET", "/", nil)
+
+	resp, _ := app.Test(req, 1)
+	t.Run("Test AuthRoutes - Fail, Error Basic Auth", func(t *testing.T) {
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+	})
+}
