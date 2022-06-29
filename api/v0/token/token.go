@@ -19,8 +19,9 @@ type bizFunctions interface {
 
 // These error codes are used in tests
 var (
-	errMockGetAll = errors.New("error, mock GetAll")
-	errMockRevoke = errors.New("error, mock Revoke")
+	errMockGetAll   = errors.New("error, mock GetAll")
+	errMockRevoke   = errors.New("error, mock Revoke")
+	errMockValidate = errors.New("error, mock Validate")
 )
 
 type APIToken struct {
@@ -45,9 +46,6 @@ func NewAPIToken(bizLayer bizFunctions) *APIToken {
 // @Router /v0/token/{token}/validate [get]
 func (t *APIToken) ValidateToken(ctx *fiber.Ctx) error {
 	token := ctx.Params("token")
-	if token == "" {
-		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapStrInErrMap("token is missing"))
-	}
 
 	err := t.bizLayer.Validate(ctx.Context(), token)
 	if err != nil {

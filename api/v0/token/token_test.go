@@ -10,6 +10,46 @@ import (
 	"testing"
 )
 
+func TestValidate_StatusOk(t *testing.T) {
+	fakeBizFunctions := &tokenfakes.FakeBizFunctions{}
+	fakeBizFunctions.ValidateReturns(nil)
+
+	apiToken := NewAPIToken(fakeBizFunctions)
+
+	app := fiber.New()
+	app.Get("/:token/validate", apiToken.ValidateToken)
+
+	req := httptest.NewRequest("GET", "/mock_token_value/validate", nil)
+
+	ctx := context.Background()
+	req.WithContext(context.WithValue(ctx, "token", "12345"))
+
+	resp, _ := app.Test(req, 1)
+	t.Run("Test Validate - StatusOk", func(t *testing.T) {
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+	})
+}
+
+func TestValidate_InternalServerError(t *testing.T) {
+	fakeBizFunctions := &tokenfakes.FakeBizFunctions{}
+	fakeBizFunctions.ValidateReturns(errMockValidate)
+
+	apiToken := NewAPIToken(fakeBizFunctions)
+
+	app := fiber.New()
+	app.Get("/:token/validate", apiToken.ValidateToken)
+
+	req := httptest.NewRequest("GET", "/mock_token_value/validate", nil)
+
+	ctx := context.Background()
+	req.WithContext(context.WithValue(ctx, "token", "12345"))
+
+	resp, _ := app.Test(req, 1)
+	t.Run("Test Validate - Internal Server Error", func(t *testing.T) {
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	})
+}
+
 func TestRevoke_StatusOk(t *testing.T) {
 	fakeBizFunctions := &tokenfakes.FakeBizFunctions{}
 	fakeBizFunctions.RevokeReturns(nil)
