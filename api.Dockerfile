@@ -19,7 +19,6 @@ WORKDIR /app
 COPY --from=builder /app/.env /usr/bin/
 COPY --from=builder /app/api_server /usr/bin/
 COPY --from=builder /app/populate_admin /usr/bin/
-# COPY --from=builder /app/.env /app
 
 
 # Add script to wait for MYSQL to finish first before booting (crucial)
