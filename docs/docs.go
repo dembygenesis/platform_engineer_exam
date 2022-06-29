@@ -273,7 +273,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "http://localhost:8081/api",
 	Schemes:          []string{},
 	Title:            "API",
-	Description:      "This is an auto-generated API Docs.",
+	Description:      "Basic Auth Username: admin@gmail.com | Basic Auth Password: 123456",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

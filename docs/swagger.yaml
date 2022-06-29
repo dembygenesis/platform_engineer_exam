@@ -39,7 +39,7 @@ info:
   contact:
     email: your@mail.com
     name: API Support
-  description: This is an auto-generated API Docs.
+  description: 'Basic Auth Username: admin@gmail.com | Basic Auth Password: 123456'
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html

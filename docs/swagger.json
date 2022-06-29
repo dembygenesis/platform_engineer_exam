@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is an auto-generated API Docs.",
+        "description": "Basic Auth Username: admin@gmail.com | Basic Auth Password: 123456",
         "title": "API",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {

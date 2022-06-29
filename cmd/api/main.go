@@ -67,7 +67,7 @@ func initAPI(ctn *dic.Container, cfg *config.Config) {
 
 // @title API
 // @version 1.0
-// @description This is an auto-generated API Docs.
+// @description Basic Auth Username: admin@gmail.com | Basic Auth Password: 123456
 // @termsOfService http://swagger.io/terms/
 // @contact.name API Support
 // @contact.email your@mail.com
