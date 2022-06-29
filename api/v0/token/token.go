@@ -2,6 +2,7 @@ package token
 
 import (
 	"context"
+	"errors"
 	"github.com/dembygenesis/platform_engineer_exam/api/helpers"
 	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/gofiber/fiber/v2"
@@ -15,6 +16,12 @@ type bizFunctions interface {
 	Revoke(ctx context.Context, key string) error
 	Generate(ctx context.Context, user *models.User) (string, error)
 }
+
+// These error codes are used in tests
+var (
+	errMockGetAll = errors.New("error, mock GetAll")
+	errMockRevoke = errors.New("error, mock Revoke")
+)
 
 type APIToken struct {
 	bizLayer bizFunctions
@@ -84,10 +91,6 @@ func (t *APIToken) GetAll(ctx *fiber.Ctx) error {
 // @Router /v0/token/{token}/revoke [delete]
 func (t *APIToken) Revoke(ctx *fiber.Ctx) error {
 	token := ctx.Params("token")
-	if token == "" {
-		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapStrInErrMap("token is missing"))
-	}
-
 	err := t.bizLayer.Revoke(ctx.Context(), token)
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
