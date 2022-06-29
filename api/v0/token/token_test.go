@@ -1,16 +1,10 @@
 package token
 
 import (
-	"bytes"
-	"encoding/json"
-	"github.com/dembygenesis/platform_engineer_exam/api/helpers"
-	"github.com/dembygenesis/platform_engineer_exam/api/v0/middlewares"
 	"github.com/dembygenesis/platform_engineer_exam/api/v0/token/tokenfakes"
 	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"sync"
@@ -75,61 +69,6 @@ func TestGetToken_InternalServerError_UserMetaFails(t *testing.T) {
 
 var m sync.RWMutex
 var wg sync.WaitGroup
-
-func TestValidate_Throttle(t *testing.T) {
-	fakeBizFunctions := &tokenfakes.FakeBizFunctions{}
-	fakeBizFunctions.ValidateReturns(nil)
-
-	apiToken := NewAPIToken(fakeBizFunctions)
-
-	app := fiber.New()
-	app.Get("/:token/validate", middlewares.Throttle(), apiToken.ValidateToken)
-	req := httptest.NewRequest("GET", "/mock_token_value/validate", nil)
-
-	iterator := 0
-
-	t.Run("Test Validate - Throttled Requests", func(t *testing.T) {
-		errorResponseCount := 0
-		reqCount := 20
-
-		wg.Add(reqCount)
-
-		for reqCount > 0 {
-			iterator++
-
-			go func() {
-				defer wg.Done()
-
-				resp, err := app.Test(req, 1)
-				require.NoError(t, err)
-
-				readBody, err := ioutil.ReadAll(resp.Body)
-				require.NoError(t, err)
-
-				err = resp.Body.Close()
-				require.NoError(t, err)
-
-				resp.Body = ioutil.NopCloser(bytes.NewReader(readBody))
-				respStr := string(readBody)
-
-				if resp.StatusCode == http.StatusForbidden {
-					var errorRespExpected map[string][]string
-					err = json.Unmarshal([]byte(respStr), &errorRespExpected)
-					require.NoError(t, err)
-
-					require.Equal(t, helpers.WrapErrInErrMap(middlewares.ErrThrottleLimitExceeded), errorRespExpected)
-					m.Lock()
-					errorResponseCount = errorResponseCount + 1
-					m.Unlock()
-				}
-			}()
-			reqCount--
-		}
-		wg.Wait()
-
-		require.Equal(t, true, errorResponseCount > 4)
-	})
-}
 
 func TestValidate_StatusOk(t *testing.T) {
 	fakeBizFunctions := &tokenfakes.FakeBizFunctions{}
