@@ -7,6 +7,7 @@ import (
 	"github.com/dembygenesis/platform_engineer_exam/src/utils/common"
 	"github.com/friendsofgo/errors"
 	"github.com/sirupsen/logrus"
+	"time"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . dataPersistence
@@ -76,8 +77,7 @@ func (b *BusinessToken) Validate(ctx context.Context, key string) error {
 		}).Error("error_validate")
 		return errTokenExpired
 	}
-	daysElapsed := int(token.ExpiresAt.Sub(token.CreatedAt).Hours() / 7)
-	if daysElapsed > b.tokenDaysValid {
+	if time.Now().Unix() > token.ExpiresAt.Unix() {
 		defer func() {
 			err = b.dataLayer.UpdateTokenToExpired(ctx, token)
 			if err != nil {

@@ -3,7 +3,6 @@ package token
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"github.com/dembygenesis/platform_engineer_exam/models"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql"
 	"github.com/dembygenesis/platform_engineer_exam/src/persistence/mysql/models_schema"
@@ -140,9 +139,7 @@ func (p *PersistenceToken) Generate(ctx context.Context, createdBy int, randomCh
 
 	createdAt := time.Now()
 	if !p.mockCreatedTime.IsZero() {
-
 		createdAt = p.mockCreatedTime
-		fmt.Println("=============== in *p.mockCreatedTime", p.mockCreatedTime)
 	}
 
 	newToken := models_schema.Token{

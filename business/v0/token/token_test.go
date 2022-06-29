@@ -223,8 +223,7 @@ func TestBusinessToken_Validate_FailPath_DeterminedExpired(t *testing.T) {
 	fakeDataPersistence.GetTokenReturns(&models.Token{
 		Id:        1,
 		Key:       tokenKey,
-		CreatedAt: time.Now().AddDate(0, 0, -7),
-		ExpiresAt: time.Now(),
+		ExpiresAt: time.Now().AddDate(0, 0, -1),
 		Revoked:   false,
 		Expired:   false,
 		CreatedBy: "Demby",
