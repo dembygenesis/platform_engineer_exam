@@ -10,7 +10,6 @@ func GetRouter(app *fiber.App, ctn *dic.Container) {
 	api := app.Group("/api")
 	v0 := api.Group("/v0")
 
-	// apiToken := token.NewAPIToken()
 	apiToken := ctn.GetApiToken()
 	authMiddlewares := ctn.GetApiMiddlewares()
 

@@ -8,6 +8,7 @@ import (
 	"net/http"
 )
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . bizFunctions
 type bizFunctions interface {
 	Validate(ctx context.Context, key string) error
 	GetAll(ctx context.Context) ([]models.Token, error)
@@ -65,7 +66,7 @@ func (t *APIToken) GetAll(ctx *fiber.Ctx) error {
 	if err != nil {
 		return ctx.Status(http.StatusInternalServerError).JSON(helpers.WrapErrInErrMap(err))
 	}
-	return ctx.Status(http.StatusCreated).JSON(tokens)
+	return ctx.Status(http.StatusOK).JSON(tokens)
 }
 
 // Revoke
