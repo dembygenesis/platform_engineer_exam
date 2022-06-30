@@ -32,7 +32,6 @@ func initAPI(ctn *dic.Container, cfg *config.Config) {
 		TimeZone:   "America/New_York",
 	}))
 
-	// app.Static("/docs", "./docs/index.html")
 	app.Static("/docs", "./docs")
 	app.Static("/", "./public")
 	api.GetRouter(app, ctn)
